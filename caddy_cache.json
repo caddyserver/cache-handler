@@ -9,12 +9,37 @@
 					"listen": [":80"],
 					"routes": [
 						{
+							"match": [{
+								"path": ["/cache-default"]
+							}],
 							"handle": [
 								{
-									"handler": "cache"
+									"handler": "cache",
+									"default_ttl": 60
 								},
 								{
 									"handler": "static_response",
+									"body": "Hello there!"
+								}
+							]
+						},
+						{
+							"match": [{
+								"path": ["/cache-header"]
+							}],
+							"handle": [
+								{
+									"handler": "cache",
+									"olric": {
+										"bind_port": 6788,
+										"discovery_port": 6789
+									}
+								},
+								{
+									"handler": "static_response",
+									"headers": {
+										"Cache-Control": ["s-maxage=60"]
+									},
 									"body": "Hello there!"
 								}
 							]

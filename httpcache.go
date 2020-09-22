@@ -28,6 +28,7 @@ import (
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/golang/groupcache"
 	"github.com/pomerium/autocache"
+	"github.com/pquerna/cachecontrol"
 )
 
 func init() {
@@ -99,7 +100,6 @@ func (c *Cache) Validate() error {
 }
 
 func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
-	// TODO: proper RFC implementation of cache control headers...
 	if r.Header.Get("Cache-Control") == "no-cache" || (r.Method != "GET" && r.Method != "HEAD") {
 		return next.ServeHTTP(w, r)
 	}
@@ -158,27 +158,29 @@ func (c *Cache) getter(ctx context.Context, key string, dest groupcache.Sink) er
 	defer bufPool.Put(buf)
 
 	// we need to record the response if we are to cache it; only cache if
-	// request is successful (TODO: there's probably much more nuance needed here)
+	// request is successful
 	rr := caddyhttp.NewResponseRecorder(combo.rw, buf, func(status int, header http.Header) bool {
-		shouldBuf := status < 300
+		reasons, _, err := cachecontrol.CachableResponseWriter(combo.req, status, combo.rw, cachecontrol.Options{})
 
-		if shouldBuf {
-			// store the header before the body, so we can efficiently
-			// and conveniently use a single buffer for both; gob
-			// decoder will only read up to end of gob message, and
-			// the rest will be the body, which will be written
-			// implicitly for us by the recorder
-			err := gob.NewEncoder(buf).Encode(headerAndStatus{
-				Header: header,
-				Status: status,
-			})
-			if err != nil {
-				log.Printf("[ERROR] Encoding headers for cache entry: %v; not caching this request", err)
-				return false
-			}
+		if err != nil || len(reasons) > 0 {
+			return false
 		}
 
-		return shouldBuf
+		// store the header before the body, so we can efficiently
+		// and conveniently use a single buffer for both; gob
+		// decoder will only read up to end of gob message, and
+		// the rest will be the body, which will be written
+		// implicitly for us by the recorder
+		err = gob.NewEncoder(buf).Encode(headerAndStatus{
+			Header: header,
+			Status: status,
+		})
+		if err != nil {
+			log.Printf("[ERROR] Encoding headers for cache entry: %v; not caching this request", err)
+			return false
+		}
+
+		return true
 	})
 
 	// execute next handlers in chain

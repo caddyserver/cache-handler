@@ -165,9 +165,9 @@ func (c *Cache) writeResponse(w http.ResponseWriter, rdr io.Reader) error {
 func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
 	// TODO(dunglas): use functions added in https://github.com/pquerna/cachecontrol/pull/18 if merged
 	switch r.Method {
-	case "GET":
-	case "HEAD":
-	case "POST":
+	case http.MethodGet:
+	case http.MethodHead:
+	case http.MethodPost:
 	default:
 		// method not cacheable
 		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=METHOD")

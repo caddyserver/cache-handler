@@ -20,7 +20,9 @@ We are looking for volunteers to improve this module. Are you interested? Please
 
 * [ ] Add support for `Vary`
 * [ ] Enable the distributed mode of Olric (our cache library)
+* [ ] Allow to serve stale responses if the backend is down or while the new version is being generated
 * [ ] Add Caddyfile directives
 * [ ] Add support for cache validation
 * [ ] Add support for cache invalidation (purge/ban)
 * [ ] Add support for cache tags (similar to Varnish ykey)
+* [ ] Add support for the `ttl` attribute of the `Cache-Status` header

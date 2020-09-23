@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -34,14 +35,28 @@ import (
 
 const userAgent = "Caddy"
 
+// db and dmap are global to preserve the cache between reloads and to share the same cache between all routes
+// These variables are destroyed and recreated if and only if there is a configuration change
+var (
+	db             *olric.Olric
+	dmap           *olric.DMap
+	previousConfig Config
+)
+
 func init() {
 	caddy.RegisterModule(Cache{})
 }
 
+type Config struct {
+	// Maximum size of the cache, in bytes. Default is 512 MB.
+	MaxSize    int64 `json:"max_size,omitempty"`
+	DefaultTTL int   `json:"default_ttl,omitempty"`
+	Olric      Olric `json:"olric,omitempty"`
+}
+
 type Olric struct {
-	Env           string `json:"env,omitempty"`
-	BindPort      int    `json:"bind_port,omitempty"`
-	DiscoveryPort int    `json:"discovery_port,omitempty"`
+	Env string `json:"env,omitempty"`
+	// TODO: we'll likely need more options here
 }
 
 // Cache implements a simple distributed cache.
@@ -56,13 +71,7 @@ type Olric struct {
 // - Preserve cache through config reloads
 // - More control over what gets cached
 type Cache struct {
-	// Maximum size of the cache, in bytes. Default is 512 MB.
-	MaxSize    int64 `json:"max_size,omitempty"`
-	DefaultTTL int   `json:"default_ttl,omitempty"`
-	Olric      Olric `json:"olric,omitempty"`
-
-	db     *olric.Olric
-	dmap   *olric.DMap
+	Config
 	logger *zap.Logger
 }
 
@@ -78,40 +87,48 @@ func (Cache) CaddyModule() caddy.ModuleInfo {
 func (c *Cache) Provision(ctx caddy.Context) error {
 	c.logger = ctx.Logger(c)
 
+	if db != nil && (c.Config == previousConfig || c.Config == Config{}) {
+		// No config change, reuse the existing cache
+		return nil
+	}
+	previousConfig = c.Config
+
+	if db != nil {
+		// This isn't necessary to shutdown Olric explicitly during Caddy's shutdown because Olric handles SIGTERM by itself
+		// We restart it only when the config changes
+		if err := db.Shutdown(ctx); err != nil {
+			c.logger.Panic("failed to shutdown Olric", zap.Error(err))
+		}
+	}
+
 	maxSize := c.MaxSize
 	if maxSize == 0 {
 		const maxMB = 512
 		maxSize = int64(maxMB << 20)
 	}
 
-	if c.Olric.Env == "" {
-		c.Olric.Env = "local"
+	env := c.Olric.Env
+	if env == "" {
+		env = "local"
 	}
 
 	started, cancel := context.WithCancel(context.Background())
-	cfg := config.New(c.Olric.Env)
-	if c.Olric.BindPort != 0 {
-		cfg.BindPort = c.Olric.BindPort
-	}
-	if c.Olric.DiscoveryPort != 0 {
-		cfg.MemberlistConfig.BindPort = c.Olric.DiscoveryPort
-		cfg.MemberlistConfig.AdvertisePort = c.Olric.DiscoveryPort
-	}
+	cfg := config.New(env)
 	cfg.Cache.MaxInuse = int(maxSize)
 	cfg.Started = func() {
 		defer cancel()
 
-		c.logger.Info("olric is ready to accept connections")
+		c.logger.Debug("olric is ready to accept connections")
 	}
 	var err error
-	c.db, err = olric.New(cfg)
+	db, err = olric.New(cfg)
 	if err != nil {
 		return err
 	}
 
 	errCh := make(chan error, 1)
 	go func() {
-		err = c.db.Start()
+		err = db.Start()
 		if err != nil {
 			c.logger.Error("olric.Start returned an error", zap.Error(err))
 			errCh <- err
@@ -122,21 +139,13 @@ func (c *Cache) Provision(ctx caddy.Context) error {
 		return err
 	case <-started.Done():
 	}
-	c.dmap, err = c.db.NewDMap(dmapName)
+	dmap, err = db.NewDMap(dmapName)
 	return err
-}
-
-// Cleanup shutdowns Olric's DB.
-func (c *Cache) Cleanup() error {
-	if c.db == nil {
-		return nil
-	}
-
-	return c.db.Shutdown(context.Background())
 }
 
 // Validate validates c.
 func (c *Cache) Validate() error {
+	// TODO: detect when there is a different config for different routes and throw a validation error in this case
 	if c.MaxSize < 0 {
 		return fmt.Errorf("size must be greater than 0")
 	}
@@ -183,14 +192,15 @@ func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 
 	getterCtx := getterContext{w, r, next, reqDir}
 	ctx := context.WithValue(r.Context(), getterContextCtxKey, getterCtx)
-	key := r.RequestURI
+	// TODO: add support for the Vary header
+	key := strings.Join([]string{r.Host, r.RequestURI, r.Method}, "-")
 
 	// the buffer will store the gob-encoded header, then the body
 	buf := bufPool.Get().(*bytes.Buffer)
 	buf.Reset()
 	defer bufPool.Put(buf)
 
-	value, err := c.dmap.Get(key)
+	value, err := dmap.Get(key)
 	if err != nil {
 		if err == olric.ErrKeyNotFound {
 			// Cache the request here
@@ -306,7 +316,7 @@ func (c *Cache) serveAndCache(ctx context.Context, key string, buf *bytes.Buffer
 	}
 
 	// add to cache
-	if err := c.dmap.PutEx(key, buf.Bytes(), ttl); err != nil {
+	if err := dmap.PutEx(key, buf.Bytes(), ttl); err != nil {
 		return err
 	}
 
@@ -345,7 +355,6 @@ const getterContextCtxKey ctxKey = "getter_context"
 // Interface guards
 var (
 	_ caddy.Provisioner           = (*Cache)(nil)
-	_ caddy.CleanerUpper          = (*Cache)(nil)
 	_ caddy.Validator             = (*Cache)(nil)
 	_ caddyhttp.MiddlewareHandler = (*Cache)(nil)
 )

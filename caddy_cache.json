@@ -15,7 +15,7 @@
 							"handle": [
 								{
 									"handler": "cache",
-									"default_ttl": 60
+									"default_ttl": 5
 								},
 								{
 									"handler": "static_response",
@@ -29,11 +29,7 @@
 							}],
 							"handle": [
 								{
-									"handler": "cache",
-									"olric": {
-										"bind_port": 6788,
-										"discovery_port": 6789
-									}
+									"handler": "cache"
 								},
 								{
 									"handler": "static_response",

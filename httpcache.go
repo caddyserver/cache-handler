@@ -87,19 +87,12 @@ func (Cache) CaddyModule() caddy.ModuleInfo {
 func (c *Cache) Provision(ctx caddy.Context) error {
 	c.logger = ctx.Logger(c)
 
-	if db != nil && (c.Config == previousConfig || c.Config == Config{}) {
-		// No config change, reuse the existing cache
+	if db != nil {
+		// the cache is immutable
 		return nil
 	}
-	previousConfig = c.Config
 
-	if db != nil {
-		// This isn't necessary to shutdown Olric explicitly during Caddy's shutdown because Olric handles SIGTERM by itself
-		// We restart it only when the config changes
-		if err := db.Shutdown(ctx); err != nil {
-			c.logger.Panic("failed to shutdown Olric", zap.Error(err))
-		}
-	}
+	previousConfig = c.Config
 
 	maxSize := c.MaxSize
 	if maxSize == 0 {
@@ -128,6 +121,7 @@ func (c *Cache) Provision(ctx caddy.Context) error {
 
 	errCh := make(chan error, 1)
 	go func() {
+		// This isn't necessary to shutdown Olric explicitly during Caddy's shutdown because Olric handles SIGTERM by itself
 		err = db.Start()
 		if err != nil {
 			c.logger.Error("olric.Start returned an error", zap.Error(err))
@@ -145,7 +139,11 @@ func (c *Cache) Provision(ctx caddy.Context) error {
 
 // Validate validates c.
 func (c *Cache) Validate() error {
-	// TODO: detect when there is a different config for different routes and throw a validation error in this case
+	if (c.Config != previousConfig && c.Config != Config{}) {
+		// TODO(dunglas): be smarter than that and whitelist some config keys such as DefaultTTL
+		return fmt.Errorf("the configuration of the cache cannot be changed without restarting the server(s)")
+	}
+
 	if c.MaxSize < 0 {
 		return fmt.Errorf("size must be greater than 0")
 	}

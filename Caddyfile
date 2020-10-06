@@ -1,0 +1,15 @@
+localhost
+
+route /cache-default {
+    cache {
+        default_ttl 5
+        olric_env local
+    }
+    respond "Hello, default!"
+}
+
+route /cache-header {
+    cache
+    header Cache-Control "s-maxage=60"
+    respond "Hello, Cache-Control header!"
+}

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -28,6 +29,8 @@ import (
 	"github.com/buraksezer/olric"
 	"github.com/buraksezer/olric/config"
 	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/pquerna/cachecontrol/cacheobject"
 	"go.uber.org/zap"
@@ -45,16 +48,20 @@ var (
 
 func init() {
 	caddy.RegisterModule(Cache{})
+	httpcaddyfile.RegisterHandlerDirective("cache", parseCaddyfile)
 }
 
 type Config struct {
 	// Maximum size of the cache, in bytes. Default is 512 MB.
-	MaxSize    int64 `json:"max_size,omitempty"`
-	DefaultTTL int   `json:"default_ttl,omitempty"`
-	Olric      Olric `json:"olric,omitempty"`
+	MaxSize int64 `json:"max_size,omitempty"`
+	// Default Time To Live for responses with no Cache-Control HTTP headers, in seconds. Default is 0.
+	DefaultTTL int `json:"default_ttl,omitempty"`
+	// Configuration of the Olric cache data store.
+	Olric Olric `json:"olric,omitempty"`
 }
 
 type Olric struct {
+	// The network environment: local, lan or wan. See https://pkg.go.dev/github.com/buraksezer/olric/config#New for details.
 	Env string `json:"env,omitempty"`
 	// TODO: we'll likely need more options here
 }
@@ -65,11 +72,9 @@ type Olric struct {
 //
 // Still TODO:
 //
-// - Properly set autocache options
+// - Properly set olric options
 // - Eviction policies and API
 // - Use single cache per-process
-// - Preserve cache through config reloads
-// - More control over what gets cached
 type Cache struct {
 	Config
 	logger *zap.Logger
@@ -147,6 +152,10 @@ func (c *Cache) Validate() error {
 	if c.MaxSize < 0 {
 		return fmt.Errorf("size must be greater than 0")
 	}
+	if c.Olric.Env != "" && c.Olric.Env != "local" && c.Olric.Env != "lan" && c.Olric.Env != "wan" {
+		return fmt.Errorf("available environments are local, lan and wan")
+	}
+
 	return nil
 }
 
@@ -350,9 +359,64 @@ type ctxKey string
 
 const getterContextCtxKey ctxKey = "getter_context"
 
+// UnmarshalCaddyfile sets up the handler from Caddyfile tokens. Syntax:
+//
+//     cache {
+//         default_ttl <ttl>
+//         max_size <size>
+//         olric_env <env>
+//     }
+func (c *Cache) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+	for d.Next() {
+		for d.NextBlock(0) {
+			switch d.Val() {
+			case "max_size":
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+
+				maxSize, err := strconv.ParseInt(d.Val(), 10, 64)
+				if err != nil {
+					return d.Errf("bad max_size value '%s': %v", d.Val(), err)
+				}
+
+				c.MaxSize = maxSize
+
+			case "default_ttl":
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+
+				defaultTTL, err := strconv.Atoi(d.Val())
+				if err != nil {
+					return d.Errf("bad default_ttl value '%s': %v", d.Val(), err)
+				}
+
+				c.DefaultTTL = defaultTTL
+
+			case "olric_env":
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+
+				c.Olric.Env = d.Val()
+			}
+		}
+	}
+	return nil
+}
+
+// parseCaddyfile unmarshals tokens from h into a new Middleware.
+func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
+	var c Cache
+	err := c.UnmarshalCaddyfile(h.Dispenser)
+	return &c, err
+}
+
 // Interface guards
 var (
 	_ caddy.Provisioner           = (*Cache)(nil)
 	_ caddy.Validator             = (*Cache)(nil)
 	_ caddyhttp.MiddlewareHandler = (*Cache)(nil)
+	_ caddyfile.Unmarshaler       = (*Cache)(nil)
 )

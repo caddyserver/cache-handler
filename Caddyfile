@@ -1,20 +1,20 @@
 {
     experimental_http3
     cache {
-        olric_config /path/to/olric.yaml
+        #olric_config /path/to/olric.yaml
     }
 }
 
 localhost
 
-route /cache {
+route /cache-s-maxage {
     cache
-    header Cache-Control "s-maxage=5"
-    respond "Hello!"
+    header Cache-Control "s-maxage=5, max-age=1"
+    respond "Hello, s-maxage!"
 }
 
-route /other-cache {
+route /cache-max-age {
     cache
-    header Cache-Control "s-maxage=60"
-    respond "Hello, World!"
+    header Cache-Control "max-age=60"
+    respond "Hello, max-age!"
 }

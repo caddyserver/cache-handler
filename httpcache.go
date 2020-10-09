@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -38,32 +37,22 @@ import (
 
 const userAgent = "Caddy"
 
-// db and dmap are global to preserve the cache between reloads and to share the same cache between all routes
-// These variables are destroyed and recreated if and only if there is a configuration change
+// config, db and dmap are global to preserve the cache between reloads and to share the same cache between all routes
 var (
-	db             *olric.Olric
-	dmap           *olric.DMap
-	previousConfig Config
+	cfg  *Config
+	db   *olric.Olric
+	dmap *olric.DMap
 )
 
 func init() {
 	caddy.RegisterModule(Cache{})
-	httpcaddyfile.RegisterHandlerDirective("cache", parseCaddyfile)
+	httpcaddyfile.RegisterGlobalOption("cache", parseCaddyfileGlobalOption)
+	httpcaddyfile.RegisterHandlerDirective("cache", parseCaddyfileHandlerDirective)
 }
 
 type Config struct {
-	// Maximum size of the cache, in bytes. Default is 512 MB.
-	MaxSize int64 `json:"max_size,omitempty"`
-	// Default Time To Live for responses with no Cache-Control HTTP headers, in seconds. Default is 0.
-	DefaultTTL int `json:"default_ttl,omitempty"`
-	// Configuration of the Olric cache data store.
-	Olric Olric `json:"olric,omitempty"`
-}
-
-type Olric struct {
-	// The network environment: local, lan or wan. See https://pkg.go.dev/github.com/buraksezer/olric/config#New for details.
-	Env string `json:"env,omitempty"`
-	// TODO: we'll likely need more options here
+	// Path to the Olric's configuration file. See https://github.com/buraksezer/olric#client-server-mode.
+	OlricConfig string `json:"olric_config,omitempty"`
 }
 
 // Cache implements a simple distributed cache.
@@ -93,33 +82,34 @@ func (c *Cache) Provision(ctx caddy.Context) error {
 	c.logger = ctx.Logger(c)
 
 	if db != nil {
-		// the cache is immutable
+		// the cache is immutable, provision it only one time
 		return nil
 	}
 
-	previousConfig = c.Config
-
-	maxSize := c.MaxSize
-	if maxSize == 0 {
-		const maxMB = 512
-		maxSize = int64(maxMB << 20)
+	if cfg == nil {
+		// No global config (JSON format?), set the first handler config encountered as the global one
+		cfg = &c.Config
+	} else {
+		// A global config is provided (caddyfile format?), always use it
+		c.Config = *cfg
 	}
 
-	env := c.Olric.Env
-	if env == "" {
-		env = "local"
+	if c.OlricConfig != "" {
+		// TODO: add support for Olric's YAML config
+		// See https://github.com/caddyserver/cache-handler/pull/6#discussion_r502047116
+		return fmt.Errorf("passing an Olric configuration isn't supported yet")
 	}
 
 	started, cancel := context.WithCancel(context.Background())
-	cfg := config.New(env)
-	cfg.Cache.MaxInuse = int(maxSize)
-	cfg.Started = func() {
+	olricConfig := config.New("local")
+	olricConfig.Cache.MaxInuse = int(512 << 20) // 512 MB
+	olricConfig.Started = func() {
 		defer cancel()
 
 		c.logger.Debug("olric is ready to accept connections")
 	}
 	var err error
-	db, err = olric.New(cfg)
+	db, err = olric.New(olricConfig)
 	if err != nil {
 		return err
 	}
@@ -142,21 +132,12 @@ func (c *Cache) Provision(ctx caddy.Context) error {
 	return err
 }
 
-// Validate validates c.
 func (c *Cache) Validate() error {
-	if (c.Config != previousConfig && c.Config != Config{}) {
-		// TODO(dunglas): be smarter than that and whitelist some config keys such as DefaultTTL
-		return fmt.Errorf("the configuration of the cache cannot be changed without restarting the server(s)")
+	if cfg == nil || c.Config == *cfg {
+		return nil
 	}
 
-	if c.MaxSize < 0 {
-		return fmt.Errorf("size must be greater than 0")
-	}
-	if c.Olric.Env != "" && c.Olric.Env != "local" && c.Olric.Env != "lan" && c.Olric.Env != "wan" {
-		return fmt.Errorf("available environments are local, lan and wan")
-	}
-
-	return nil
+	return fmt.Errorf("the cache configuration is global and immutable, it must have the exact same value for all handlers")
 }
 
 func (c *Cache) writeResponse(w http.ResponseWriter, rdr io.Reader) error {
@@ -309,13 +290,7 @@ func (c *Cache) serveAndCache(ctx context.Context, key string, buf *bytes.Buffer
 
 	cacheobject.ExpirationObject(&obj, &rv)
 
-	var zeroTime time.Time
-	var ttl time.Duration
-	if rv.OutExpirationTime == zeroTime {
-		ttl = time.Duration(c.DefaultTTL) * time.Second
-	} else {
-		ttl = rv.OutExpirationTime.Sub(obj.NowUTC)
-	}
+	ttl := rv.OutExpirationTime.Sub(obj.NowUTC)
 
 	if ttl <= 0 {
 		respHeaders.Add("Cache-Status", userAgent+"; fwd=uri-miss")
@@ -359,64 +334,36 @@ type ctxKey string
 
 const getterContextCtxKey ctxKey = "getter_context"
 
-// UnmarshalCaddyfile sets up the handler from Caddyfile tokens. Syntax:
-//
-//     cache {
-//         default_ttl <ttl>
-//         max_size <size>
-//         olric_env <env>
-//     }
-func (c *Cache) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func parseCaddyfileGlobalOption(d *caddyfile.Dispenser) (interface{}, error) {
+	cfg = &Config{}
 	for d.Next() {
 		for d.NextBlock(0) {
 			switch d.Val() {
-			case "max_size":
+			case "olric_config":
 				if !d.NextArg() {
-					return d.ArgErr()
+					return nil, d.ArgErr()
 				}
 
-				maxSize, err := strconv.ParseInt(d.Val(), 10, 64)
-				if err != nil {
-					return d.Errf("bad max_size value '%s': %v", d.Val(), err)
-				}
-
-				c.MaxSize = maxSize
-
-			case "default_ttl":
-				if !d.NextArg() {
-					return d.ArgErr()
-				}
-
-				defaultTTL, err := strconv.Atoi(d.Val())
-				if err != nil {
-					return d.Errf("bad default_ttl value '%s': %v", d.Val(), err)
-				}
-
-				c.DefaultTTL = defaultTTL
-
-			case "olric_env":
-				if !d.NextArg() {
-					return d.ArgErr()
-				}
-
-				c.Olric.Env = d.Val()
+				cfg.OlricConfig = d.Val()
 			}
 		}
 	}
-	return nil
+
+	return nil, nil
 }
 
-// parseCaddyfile unmarshals tokens from h into a new Middleware.
-func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
-	var c Cache
-	err := c.UnmarshalCaddyfile(h.Dispenser)
-	return &c, err
+func parseCaddyfileHandlerDirective(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
+	c := &Cache{}
+	if cfg != nil {
+		c.Config = *cfg
+	}
+
+	return c, nil
 }
 
 // Interface guards
 var (
 	_ caddy.Provisioner           = (*Cache)(nil)
-	_ caddy.Validator             = (*Cache)(nil)
 	_ caddyhttp.MiddlewareHandler = (*Cache)(nil)
-	_ caddyfile.Unmarshaler       = (*Cache)(nil)
+	_ caddy.Validator             = (*Cache)(nil)
 )

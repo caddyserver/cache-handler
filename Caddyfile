@@ -1,15 +1,20 @@
-localhost
-
-route /cache-default {
+{
+    experimental_http3
     cache {
-        default_ttl 5
-        olric_env local
+        olric_config /path/to/olric.yaml
     }
-    respond "Hello, default!"
 }
 
-route /cache-header {
+localhost
+
+route /cache {
+    cache
+    header Cache-Control "s-maxage=5"
+    respond "Hello!"
+}
+
+route /other-cache {
     cache
     header Cache-Control "s-maxage=60"
-    respond "Hello, Cache-Control header!"
+    respond "Hello, World!"
 }

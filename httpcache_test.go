@@ -10,8 +10,8 @@ func TestMaxAge(t *testing.T) {
 	tester := caddytest.NewTester(t)
 	tester.InitServer(` 
 	{
-	  http_port     9080
-	  https_port    9443
+		http_port     9080
+		https_port    9443
 	}
 	localhost:9080 {
 		route /cache-max-age {
@@ -30,4 +30,25 @@ func TestMaxAge(t *testing.T) {
 	if resp2.Header.Get("Cache-Status") != "Caddy; hit" {
 		t.Errorf("unexpected Cache-Status header %v", resp2.Header.Get("Cache-Status"))
 	}
+}
+
+func TestOlricConfig(t *testing.T) {
+	tester := caddytest.NewTester(t)
+	tester.InitServer(` 
+	{
+		http_port     9080
+		https_port    9443
+		cache {
+			olric_config fixtures/olricd.yaml
+		}
+	}
+	localhost:9080 {
+		route /cache-max-age {
+			cache
+			header Cache-Control "max-age=60"
+			respond "Hello, max-age!"
+		}
+	}`, "caddyfile")
+
+	tester.AssertGetResponse(`http://localhost:9080/cache-max-age`, 200, "Hello, max-age!")
 }

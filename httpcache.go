@@ -94,15 +94,18 @@ func (c *Cache) Provision(ctx caddy.Context) error {
 		c.Config = *cfg
 	}
 
-	if c.OlricConfig != "" {
-		// TODO: add support for Olric's YAML config
-		// See https://github.com/caddyserver/cache-handler/pull/6#discussion_r502047116
-		return fmt.Errorf("passing an Olric configuration isn't supported yet")
+	var olricConfig *config.Config
+	if c.OlricConfig == "" {
+		olricConfig = config.New("local")
+		olricConfig.Cache.MaxInuse = int(512 << 20) // 512 MB
+	} else {
+		var err error
+		if olricConfig, err = config.Load(c.OlricConfig); err != nil {
+			return err
+		}
 	}
 
 	started, cancel := context.WithCancel(context.Background())
-	olricConfig := config.New("local")
-	olricConfig.Cache.MaxInuse = int(512 << 20) // 512 MB
 	olricConfig.Started = func() {
 		defer cancel()
 

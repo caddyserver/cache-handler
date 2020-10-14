@@ -1,7 +1,7 @@
 {
     experimental_http3
     cache {
-        #olric_config /path/to/olric.yaml
+        olric_config fixtures/olricd.yaml
     }
 }
 

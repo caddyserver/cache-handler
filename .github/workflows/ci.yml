@@ -1,0 +1,79 @@
+# Used as inspiration: https://github.com/mvdan/github-actions-golang
+
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      # Default is true, cancels jobs for other platforms in the matrix if one fails
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        go: [ '1.14', '1.15' ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go }}
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Print Go version and environment
+      id: vars
+      run: |
+        printf "Using go at: $(which go)\n"
+        printf "Go version: $(go version)\n"
+        printf "\n\nGo environment:\n\n"
+        go env
+        printf "\n\nSystem environment:\n\n"
+        env
+        # Calculate the short SHA1 hash of the git commit
+        echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
+        echo "::set-output name=go_cache::$(go env GOCACHE)"
+
+    - name: Cache the build cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.vars.outputs.go_cache }}
+        key: ${{ runner.os }}-${{ matrix.go }}-go-ci-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.go }}-go-ci
+
+    - name: Install xcaddy
+      working-directory: ./cmd/caddy
+      run: |
+        go get -u github.com/caddyserver/xcaddy/cmd/xcaddy
+
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+
+    - name: Build
+      env:
+        CGO_ENABLED: 0
+      run: |
+        xcaddy build
+
+    - name: Run tests
+      run: |
+        go test -v -coverprofile="cover-profile.out" -short -race ./...
+
+  golangci:
+    name: Lint
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest

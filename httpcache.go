@@ -143,19 +143,25 @@ func (c *Cache) Validate() error {
 	return fmt.Errorf("the cache configuration is global and immutable, it must have the exact same value for all handlers")
 }
 
-func (c *Cache) writeResponse(w http.ResponseWriter, rdr io.Reader) error {
+func (c *Cache) writeResponse(w http.ResponseWriter, rdr io.Reader, fromCache bool) error {
 	// read the header and status first
-	var hs headerAndStatus
-	err := gob.NewDecoder(rdr).Decode(&hs)
+	var meta metadata
+	err := gob.NewDecoder(rdr).Decode(&meta)
 	if err != nil {
 		return err
 	}
 
+	header := w.Header()
 	// set and write the cached headers
-	for k, v := range hs.Header {
-		w.Header()[k] = v
+	for k, v := range meta.Header {
+		header[k] = v
 	}
-	w.WriteHeader(hs.Status)
+
+	if fromCache {
+		header.Set("Age", currentAge(meta.ResponseTime, meta.CorrectedInitialAge))
+	}
+
+	w.WriteHeader(meta.Status)
 
 	// write the cached response body
 	_, err = io.Copy(w, rdr)
@@ -204,68 +210,88 @@ func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 	buf.Write(value.([]byte))
 	w.Header().Add("Cache-Status", userAgent+"; hit")
 
-	return c.writeResponse(w, buf)
+	return c.writeResponse(w, buf, true)
 }
 
 func (c *Cache) serveAndCache(ctx context.Context, key string, buf *bytes.Buffer) error {
 	combo := ctx.Value(getterContextCtxKey).(getterContext)
-	respHeaders := combo.rw.Header()
 	obj := cacheobject.Object{
 		ReqDirectives: combo.reqDir,
 		ReqHeaders:    combo.req.Header,
 		ReqMethod:     combo.req.Method,
-
-		NowUTC: time.Now().UTC(),
 	}
 	rv := cacheobject.ObjectResults{}
+
+	var requestTime time.Time
 
 	// we need to record the response if we are to cache it; only cache if
 	// request is successful
 	rr := caddyhttp.NewResponseRecorder(combo.rw, buf, func(status int, header http.Header) bool {
 		var err error
-		resDir, err := cacheobject.ParseResponseCacheControl(respHeaders.Get("Cache-Control"))
+
+		obj.RespStatusCode = status
+		obj.RespHeaders = header
+
+		obj.RespDirectives, err = cacheobject.ParseResponseCacheControl(obj.RespHeaders.Get("Cache-Control"))
 		if err != nil {
-			respHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-CACHE-CONTROL")
+			obj.RespHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-CACHE-CONTROL")
 			return false
 		}
 
-		if expires := respHeaders.Get("Expires"); expires != "" {
+		if expires := obj.RespHeaders.Get("Expires"); expires != "" {
 			if obj.RespExpiresHeader, err = http.ParseTime(expires); err != nil {
-				respHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-EXPIRES")
+				obj.RespHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-EXPIRES")
 				return false
 			}
 		}
 
-		if date := respHeaders.Get("Date"); date != "" {
-			if obj.RespDateHeader, err = http.ParseTime(date); err != nil {
-				respHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-DATE")
-				return false
-			}
-		}
-
-		if lastModified := respHeaders.Get("Last-Modified"); lastModified != "" {
+		if lastModified := obj.RespHeaders.Get("Last-Modified"); lastModified != "" {
 			if obj.RespLastModifiedHeader, err = http.ParseTime(lastModified); err != nil {
-				respHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-LAST-MODIFIED")
+				obj.RespHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-LAST-MODIFIED")
 				return false
 			}
 		}
 
-		obj.RespDirectives = resDir
-		obj.RespHeaders = respHeaders
-		obj.RespStatusCode = status
+		// Store the date as late as possible
+		obj.NowUTC = time.Now().UTC() // response time
+		date := obj.RespHeaders.Get("Date")
+		if date == "" {
+			// We need the Date header to be stored in the cache to compute the Age header
+			obj.RespDateHeader = obj.NowUTC
+			// A recipient with a clock that receives a response message without a Date header field
+			// MUST record the time it was received and append a corresponding Date header field
+			// to the message's header section if it is cached or forwarded downstream.
+			// https://httpwg.org/specs/rfc7231.html#header.date
+			obj.RespHeaders.Set("Date", obj.RespDateHeader.Format(http.TimeFormat))
+		} else if obj.RespDateHeader, err = http.ParseTime(date); err != nil {
+			obj.RespHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-DATE")
+			return false
+		}
 
 		cacheobject.CachableObject(&obj, &rv)
 		if rv.OutErr != nil || len(rv.OutReasons) > 0 {
-			respHeaders.Add("Cache-Status", fmt.Sprintf(userAgent+`; fwd=request; detail="%v"`, rv.OutReasons))
+			obj.RespHeaders.Add("Cache-Status", fmt.Sprintf(userAgent+`; fwd=request; detail="%v"`, rv.OutReasons))
 			return false
 		}
 
-		// store the header before the body, so we can efficiently
+		ageValue := obj.RespHeaders.Get("Age")
+		correctedInitialAge := correctedInitialAge(obj.NowUTC, obj.RespDateHeader, requestTime, ageValue)
+
+		if ageValue != "" && correctedInitialAge != 0 {
+			// There is an intermediate cache, rewrite the header to include the network delay
+			obj.RespHeaders.Set("Age", ageToString(correctedInitialAge))
+		}
+
+		// store metadata before the body, so we can efficiently
 		// and conveniently use a single buffer for both; gob
 		// decoder will only read up to end of gob message, and
 		// the rest will be the body, which will be written
 		// implicitly for us by the recorder
-		err = gob.NewEncoder(buf).Encode(headerAndStatus{
+		err = gob.NewEncoder(buf).Encode(metadata{
+			RequestTime:         requestTime,
+			ResponseTime:        obj.NowUTC,
+			CorrectedInitialAge: correctedInitialAge,
+
 			Header: header,
 			Status: status,
 		})
@@ -277,6 +303,7 @@ func (c *Cache) serveAndCache(ctx context.Context, key string, buf *bytes.Buffer
 		return true
 	})
 
+	requestTime = time.Now().UTC()
 	// execute next handlers in chain
 	err := combo.next.ServeHTTP(rr, combo.req)
 	if err != nil {
@@ -296,8 +323,8 @@ func (c *Cache) serveAndCache(ctx context.Context, key string, buf *bytes.Buffer
 	ttl := rv.OutExpirationTime.Sub(obj.NowUTC)
 
 	if ttl <= 0 {
-		respHeaders.Add("Cache-Status", userAgent+"; fwd=uri-miss")
-		return c.writeResponse(combo.rw, buf)
+		obj.RespHeaders.Add("Cache-Status", userAgent+"; fwd=uri-miss")
+		return c.writeResponse(combo.rw, buf, false)
 	}
 
 	// add to cache
@@ -305,15 +332,18 @@ func (c *Cache) serveAndCache(ctx context.Context, key string, buf *bytes.Buffer
 		return err
 	}
 
-	respHeaders.Add("Cache-Status", userAgent+"; fwd=uri-miss; stored")
+	obj.RespHeaders.Add("Cache-Status", userAgent+"; fwd=uri-miss; stored")
 
 	// Serve the response from bytes.Buffer
-	return c.writeResponse(combo.rw, buf)
+	return c.writeResponse(combo.rw, buf, false)
 }
 
-type headerAndStatus struct {
-	Header http.Header
-	Status int
+type metadata struct {
+	RequestTime         time.Time
+	ResponseTime        time.Time
+	CorrectedInitialAge time.Duration
+	Header              http.Header
+	Status              int
 }
 
 type getterContext struct {

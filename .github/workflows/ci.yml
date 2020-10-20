@@ -14,9 +14,7 @@ jobs:
       # Default is true, cancels jobs for other platforms in the matrix if one fails
       fail-fast: false
       matrix:
-        # The build currently fails on Windows because of Olric. See https://github.com/buraksezer/olric/pull/64.
-        #os: [ ubuntu-latest, macos-latest, windows-latest ]
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         go: [ '1.15' ]
 
     runs-on: ${{ matrix.os }}

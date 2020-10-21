@@ -14,7 +14,9 @@ jobs:
       # Default is true, cancels jobs for other platforms in the matrix if one fails
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        # The Windows build currently fail because of https://github.com/golang/go/issues/40795, and because xcaddy isn't compatible with the known workaround
+        #os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest, macos-latest ]
         go: [ '1.15' ]
 
     runs-on: ${{ matrix.os }}

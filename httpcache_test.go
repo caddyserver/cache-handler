@@ -128,3 +128,24 @@ func TestOlricConfig(t *testing.T) {
 
 	tester.AssertGetResponse(`http://localhost:9080/cache-max-age`, 200, "Hello, max-age!")
 }
+
+func TestNoCache(t *testing.T) {
+	tester := caddytest.NewTester(t)
+	tester.InitServer(` 
+	{
+		http_port     9080
+		https_port    9443
+	}
+	localhost:9080 {
+		route /no-cache {
+			cache
+			header Cache-Control "max-age=60, no-cache"
+			respond "Hello, no cache."
+		}
+	}`, "caddyfile")
+
+	resp1, _ := tester.AssertGetResponse(`http://localhost:9080/no-cache`, 200, "Hello, no cache.")
+	if resp1.Header.Get("Cache-Status") != "Caddy; fwd=request; detail=NO-CACHE-PRESENT" {
+		t.Errorf("unexpected Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+	}
+}

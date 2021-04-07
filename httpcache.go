@@ -172,7 +172,7 @@ func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 	reqDir, err := cacheobject.ParseRequestCacheControl(r.Header.Get("Cache-Control"))
 
 	if err != nil {
-		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=ERROR")
+		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-CACHE-CONTROL")
 		return next.ServeHTTP(w, r)
 	}
 
@@ -186,8 +186,7 @@ func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 	}
 
 	if reqDir.NoCache {
-		// TODO: implement no-cache properly (add support for validation)
-		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=NOCACHE")
+		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=NO-CACHE-PRESENT")
 		return next.ServeHTTP(w, r)
 	}
 
@@ -239,6 +238,12 @@ func (c *Cache) serveAndCache(ctx context.Context, key string, buf *bytes.Buffer
 		obj.RespDirectives, err = cacheobject.ParseResponseCacheControl(obj.RespHeaders.Get("Cache-Control"))
 		if err != nil {
 			obj.RespHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=MALFORMED-CACHE-CONTROL")
+			return false
+		}
+
+		if obj.RespDirectives.NoCachePresent {
+			// TODO: implement no-cache properly (add support for validation)
+			obj.RespHeaders.Add("Cache-Status", userAgent+"; fwd=request; detail=NO-CACHE-PRESENT")
 			return false
 		}
 

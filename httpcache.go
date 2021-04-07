@@ -169,21 +169,25 @@ func (c *Cache) writeResponse(w http.ResponseWriter, rdr io.Reader, fromCache bo
 }
 
 func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
-	// TODO(dunglas): use functions added in https://github.com/pquerna/cachecontrol/pull/18 if merged
-	switch r.Method {
-	case http.MethodGet:
-	case http.MethodHead:
-	case http.MethodPost:
-	default:
-		// method not cacheable
-		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=METHOD")
+	reqDir, err := cacheobject.ParseRequestCacheControl(r.Header.Get("Cache-Control"))
+
+	if err != nil {
+		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=ERROR")
 		return next.ServeHTTP(w, r)
 	}
 
-	reqDir, err := cacheobject.ParseRequestCacheControl(r.Header.Get("Cache-Control"))
-	if err != nil || reqDir.NoCache || reqDir.NoStore {
+	obj := cacheobject.Object{ ReqMethod: r.Method, ReqDirectives: reqDir }
+	rv := cacheobject.ObjectResults{}
+	cacheobject.CachableRequestObject(&obj, &rv)
+
+	if rv.OutErr != nil || len(rv.OutReasons) > 0 {
+		w.Header().Add("Cache-Status", fmt.Sprintf(userAgent+`; fwd=request; detail="%v"`, rv.OutReasons))
+		return next.ServeHTTP(w, r)
+	}
+
+	if reqDir.NoCache {
 		// TODO: implement no-cache properly (add support for validation)
-		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=DIRECTIVE")
+		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=NOCACHE")
 		return next.ServeHTTP(w, r)
 	}
 

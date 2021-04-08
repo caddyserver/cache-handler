@@ -181,7 +181,7 @@ func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 	cacheobject.CachableRequestObject(&obj, &rv)
 
 	if rv.OutErr != nil || len(rv.OutReasons) > 0 {
-		w.Header().Add("Cache-Status", fmt.Sprintf(userAgent+`; fwd=request; detail="%v"`, rv.OutReasons))
+		w.Header().Add("Cache-Status", fmt.Sprintf(`%s; fwd=request; detail="%v"`, userAgent, rv.OutReasons))
 		return next.ServeHTTP(w, r)
 	}
 
@@ -280,7 +280,7 @@ func (c *Cache) serveAndCache(ctx context.Context, key string, buf *bytes.Buffer
 
 		cacheobject.CachableObject(&obj, &rv)
 		if rv.OutErr != nil || len(rv.OutReasons) > 0 {
-			obj.RespHeaders.Add("Cache-Status", fmt.Sprintf(userAgent+`; fwd=request; detail="%v"`, rv.OutReasons))
+			obj.RespHeaders.Add("Cache-Status", fmt.Sprintf(`%s; fwd=request; detail="%v"`, userAgent, rv.OutReasons))
 			return false
 		}
 

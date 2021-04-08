@@ -176,7 +176,7 @@ func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 		return next.ServeHTTP(w, r)
 	}
 
-	obj := cacheobject.Object{ ReqMethod: r.Method, ReqDirectives: reqDir }
+	obj := cacheobject.Object{ReqMethod: r.Method, ReqDirectives: reqDir}
 	rv := cacheobject.ObjectResults{}
 	cacheobject.CachableRequestObject(&obj, &rv)
 
@@ -186,6 +186,7 @@ func (c *Cache) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 	}
 
 	if reqDir.NoCache {
+		// TODO: implement no-cache properly (add support for validation)
 		w.Header().Add("Cache-Status", userAgent+"; fwd=request; detail=NO-CACHE-PRESENT")
 		return next.ServeHTTP(w, r)
 	}

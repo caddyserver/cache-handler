@@ -1,4 +1,4 @@
-module github.com/darkweak/souin/plugins/caddy
+module github.com/caddyserver/cache-handler
 
 go 1.15
 
@@ -10,3 +10,4 @@ require (
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
 	go.uber.org/zap v1.16.0
 )
+

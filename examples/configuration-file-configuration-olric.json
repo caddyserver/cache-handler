@@ -7,7 +7,7 @@
       ],
       "log_level": "info",
       "olric": {
-        "url": "olric:3320"
+        "path": "path/to/olric.yml"
       },
       "ttl": "1000s"
     },

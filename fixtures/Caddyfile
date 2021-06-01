@@ -1,4 +1,5 @@
 {
+    debug
     experimental_http3
     cache {
         olric_config fixtures/olricd.yaml
@@ -17,4 +18,10 @@ route /cache-max-age {
     cache
     header Cache-Control "max-age=60"
     respond "Hello, max-age!"
+}
+
+route /no-cache {
+    cache
+    header Cache-Control "max-age=10000, no-cache"
+    respond "Hello, no-cache!"
 }

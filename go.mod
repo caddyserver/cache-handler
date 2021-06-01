@@ -28,7 +28,7 @@ require (
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/miekg/dns v1.1.38 // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
-	github.com/pquerna/cachecontrol v0.0.0-20200921180117-858c6e7e6b7e
+	github.com/pquerna/cachecontrol v0.1.0
 	github.com/prometheus/client_golang v1.8.0 // indirect
 	github.com/smallstep/nosql v0.3.2 // indirect
 	github.com/urfave/cli v1.22.4 // indirect

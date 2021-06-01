@@ -1,0 +1,14 @@
+{
+    debug
+    experimental_http3
+    cache {
+        olric_config fixtures/olricd.yaml
+    }
+}
+
+localhost
+
+route * {
+    cache
+    reverse_proxy 127.0.0.1:8000
+}

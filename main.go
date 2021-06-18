@@ -41,7 +41,7 @@ type SouinCaddyPlugin struct {
 	Headers       []string                           `json:"headers,omitempty"`
 	Olric         configurationtypes.CacheProvider   `json:"olric,omitempty"`
 	TTL           string                             `json:"ttl,omitempty"`
-	ykeys         map[string]configurationtypes.YKey `json:"ykeys,omitempty"`
+	YKeys         map[string]configurationtypes.YKey `json:"ykeys,omitempty"`
 }
 
 // CaddyModule returns the Caddy module information.
@@ -105,6 +105,7 @@ func (s *SouinCaddyPlugin) configurationPropertyMapper() error {
 			LogLevel:     s.LogLevel,
 		}
 	}
+	s.Configuration.Ykeys = s.YKeys
 	s.Configuration.DefaultCache = defaultCache
 	return nil
 }

@@ -1,22 +1,25 @@
-package caddy
+package httpcache
 
 import (
 	"bytes"
 	"context"
+	"github.com/darkweak/souin/api"
+	"github.com/darkweak/souin/cache/coalescing"
+	"github.com/darkweak/souin/cache/types"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
-	"github.com/darkweak/souin/cache/coalescing"
 	"github.com/darkweak/souin/configurationtypes"
 	"github.com/darkweak/souin/plugins"
 	"github.com/darkweak/souin/rfc"
 	"go.uber.org/zap"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"sync"
 )
 
 type key string
@@ -39,8 +42,9 @@ type SouinCaddyPlugin struct {
 	LogLevel      string `json:"log_level,omitempty"`
 	bufPool       *sync.Pool
 	Headers       []string                           `json:"headers,omitempty"`
+	Badger        configurationtypes.CacheProvider   `json:"badger,omitempty"`
 	Olric         configurationtypes.CacheProvider   `json:"olric,omitempty"`
-	TTL           string                             `json:"ttl,omitempty"`
+	TTL           configurationtypes.Duration        `json:"ttl,omitempty"`
 	YKeys         map[string]configurationtypes.YKey `json:"ykeys,omitempty"`
 }
 
@@ -60,28 +64,34 @@ type getterContext struct {
 
 // ServeHTTP implements caddyhttp.MiddlewareHandler.
 func (s *SouinCaddyPlugin) ServeHTTP(rw http.ResponseWriter, req *http.Request, next caddyhttp.Handler) error {
+	if !plugins.CanHandle(req, s.Retriever) {
+		return next.ServeHTTP(rw, req)
+	}
+
+	if b, handler := s.HandleInternally(req); b {
+		handler(rw, req)
+		return nil
+	}
+
 	getterCtx := getterContext{rw, req, next}
 	ctx := context.WithValue(req.Context(), getterContextCtxKey, getterCtx)
 	req = req.WithContext(ctx)
-	buf := s.bufPool.Get().(*bytes.Buffer)
-	buf.Reset()
-	defer s.bufPool.Put(buf)
+	req.Header.Set("Date", time.Now().UTC().Format(time.RFC1123))
 	combo := ctx.Value(getterContextCtxKey).(getterContext)
-	plugins.DefaultSouinPluginCallback(rw, req, s.Retriever, s.RequestCoalescing, func(_ http.ResponseWriter, _ *http.Request) error {
-		recorder := httptest.NewRecorder()
-		e := combo.next.ServeHTTP(recorder, combo.req)
+	customWriter := &plugins.CustomWriter{
+		Response:       &http.Response{},
+		ResponseWriter: rw,
+		BufPool: s.bufPool,
+	}
+
+	plugins.DefaultSouinPluginCallback(customWriter, req, s.Retriever, s.RequestCoalescing, func(_ http.ResponseWriter, _ *http.Request) error {
+		e := combo.next.ServeHTTP(customWriter, combo.req)
 		if e != nil {
 			return e
 		}
 
-		response := recorder.Result()
-		req.Response = response
-		response, e = s.Retriever.GetTransport().(*rfc.VaryTransport).UpdateCacheEventually(req)
-		if e != nil {
-			return e
-		}
-
-		_, e = io.Copy(rw, response.Body)
+		combo.req.Response = customWriter.Response
+		_, e = s.Retriever.GetTransport().(*rfc.VaryTransport).UpdateCacheEventually(combo.req)
 
 		return e
 	})
@@ -94,6 +104,7 @@ func (s *SouinCaddyPlugin) configurationPropertyMapper() error {
 		return nil
 	}
 	defaultCache := &DefaultCache{
+		Badger:      s.Badger,
 		Distributed: s.Olric.URL != "" || s.Olric.Path != "" || s.Olric.Configuration != nil,
 		Headers:     s.Headers,
 		Olric:       s.Olric,
@@ -127,24 +138,33 @@ func (s *SouinCaddyPlugin) FromApp(app *SouinApp) error {
 		return nil
 	}
 
+	s.Configuration.API = app.API
+
 	if s.Configuration.DefaultCache == nil {
 		s.Configuration.DefaultCache = &DefaultCache{
 			Headers: app.Headers,
 			TTL:     app.TTL,
 		}
-	} else {
-		dc := s.Configuration.DefaultCache
-		appDc := app.DefaultCache
-		if dc.Headers == nil {
-			s.Configuration.DefaultCache.Headers = appDc.Headers
-		}
-		if dc.TTL == "" {
-			s.Configuration.DefaultCache.TTL = appDc.TTL
-		}
-		if dc.Olric.URL == "" || dc.Olric.Path == "" || dc.Olric.Configuration == nil {
-			s.Configuration.DefaultCache.Distributed = appDc.Distributed
-			s.Configuration.DefaultCache.Olric = appDc.Olric
-		}
+		return nil
+	}
+
+	dc := s.Configuration.DefaultCache
+	appDc := app.DefaultCache
+	if dc.Headers == nil {
+		s.Configuration.DefaultCache.Headers = appDc.Headers
+	}
+	if dc.TTL.Duration == 0 {
+		s.Configuration.DefaultCache.TTL = appDc.TTL
+	}
+	if dc.Olric.URL == "" || dc.Olric.Path == "" || dc.Olric.Configuration == nil {
+		s.Configuration.DefaultCache.Distributed = appDc.Distributed
+		s.Configuration.DefaultCache.Olric = appDc.Olric
+	}
+	if dc.Badger.Path == "" || dc.Badger.Configuration == nil {
+		s.Configuration.DefaultCache.Badger = appDc.Badger
+	}
+	if dc.Regex.Exclude == "" {
+		s.Configuration.DefaultCache.Regex.Exclude = appDc.Regex.Exclude
 	}
 
 	return nil
@@ -158,9 +178,10 @@ func (s *SouinCaddyPlugin) Provision(ctx caddy.Context) error {
 		return err
 	}
 
-	app, _ := ctx.App(moduleName)
+	ctxApp, _ := ctx.App(moduleName)
+	app := ctxApp.(*SouinApp)
 
-	if err := s.FromApp(app.(*SouinApp)); err != nil {
+	if err := s.FromApp(app); err != nil {
 		return err
 	}
 
@@ -170,7 +191,15 @@ func (s *SouinCaddyPlugin) Provision(ctx caddy.Context) error {
 		},
 	}
 	s.Retriever = plugins.DefaultSouinPluginInitializerFromConfiguration(s.Configuration)
+	if app.Provider == nil {
+		app.Provider = s.Retriever.GetProvider()
+	} else {
+		s.Retriever.(*types.RetrieverResponseProperties).Provider = app.Provider
+		s.Retriever.GetTransport().(*rfc.VaryTransport).Provider = app.Provider
+	}
+
 	s.RequestCoalescing = coalescing.Initialize()
+	s.MapHandler = api.GenerateHandlerMap(s.Configuration, s.Retriever.GetTransport().GetProvider(), s.Retriever.GetTransport().GetYkeyStorage())
 	return nil
 }
 
@@ -206,12 +235,69 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 		for nesting := h.Nesting(); h.NextBlock(nesting); {
 			rootOption := h.Val()
 			switch rootOption {
+			case "api":
+				apiConfiguration := configurationtypes.API{}
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					directive := h.Val()
+					switch directive {
+					case "basepath":
+						apiConfiguration.BasePath = h.RemainingArgs()[0]
+					case "souin":
+						apiConfiguration.Souin = configurationtypes.APIEndpoint{}
+						for nesting := h.Nesting(); h.NextBlock(nesting); {
+							directive := h.Val()
+							switch directive {
+							case "basepath":
+								apiConfiguration.Souin.BasePath = h.RemainingArgs()[0]
+							case "enable":
+								apiConfiguration.Souin.Enable, _ = strconv.ParseBool(h.RemainingArgs()[0])
+							case "security":
+								apiConfiguration.Souin.Security, _ = strconv.ParseBool(h.RemainingArgs()[0])
+							}
+						}
+					case "security":
+						apiConfiguration.Security = configurationtypes.SecurityAPI{}
+						for nesting := h.Nesting(); h.NextBlock(nesting); {
+							directive := h.Val()
+							switch directive {
+							case "basepath":
+								apiConfiguration.Security.BasePath = h.RemainingArgs()[0]
+							case "enable":
+								apiConfiguration.Security.Enable, _ = strconv.ParseBool(h.RemainingArgs()[0])
+							case "secret":
+								apiConfiguration.Security.Secret = h.RemainingArgs()[0]
+							}
+						}
+					}
+				}
+				cfg.API = apiConfiguration
+			case "regex":
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					directive := h.Val()
+					switch directive {
+					case "exclude":
+						cfg.DefaultCache.Regex.Exclude = h.RemainingArgs()[0]
+					}
+				}
 			case "headers":
 				args := h.RemainingArgs()
 				cfg.DefaultCache.Headers = append(cfg.DefaultCache.Headers, args...)
 			case "log_level":
 				args := h.RemainingArgs()
 				cfg.LogLevel = args[0]
+			case "badger":
+				provider := configurationtypes.CacheProvider{}
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					directive := h.Val()
+					switch directive {
+					case "path":
+						urlArgs := h.RemainingArgs()
+						provider.Path = urlArgs[0]
+					case "configuration":
+						provider.Configuration = parseCaddyfileRecursively(h)
+					}
+				}
+				cfg.DefaultCache.Badger = provider
 			case "olric":
 				cfg.DefaultCache.Distributed = true
 				provider := configurationtypes.CacheProvider{}
@@ -231,7 +317,10 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 				cfg.DefaultCache.Olric = provider
 			case "ttl":
 				args := h.RemainingArgs()
-				cfg.DefaultCache.TTL = args[0]
+				ttl, err := time.ParseDuration(args[0])
+				if err == nil {
+					cfg.DefaultCache.TTL.Duration = ttl
+				}
 			default:
 				return nil, h.Errf("unsupported root directive: %s", rootOption)
 			}
@@ -239,6 +328,7 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 	}
 
 	souinApp.DefaultCache = cfg.DefaultCache
+	souinApp.API = cfg.API
 
 	return httpcaddyfile.App{
 		Name:  moduleName,
@@ -258,7 +348,10 @@ func parseCaddyfileHandlerDirective(h httpcaddyfile.Helper) (caddyhttp.Middlewar
 		case "headers":
 			sc.DefaultCache.Headers = h.RemainingArgs()
 		case "ttl":
-			sc.DefaultCache.TTL = h.RemainingArgs()[0]
+			ttl, err := time.ParseDuration(h.RemainingArgs()[0])
+			if err == nil {
+				sc.DefaultCache.TTL.Duration = ttl
+			}
 		}
 	}
 

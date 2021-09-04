@@ -1,4 +1,4 @@
-package caddy
+package httpcache
 
 type defaultCacheError struct{}
 

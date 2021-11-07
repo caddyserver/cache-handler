@@ -1,4 +1,4 @@
-module github.com/darkweak/souin/plugins/caddy
+module github.com/caddyserver/cache-handler
 
 go 1.16
 
@@ -7,5 +7,3 @@ require (
 	github.com/darkweak/souin v1.5.10
 	go.uber.org/zap v1.19.0
 )
-
-replace github.com/darkweak/souin v1.5.10 => ../..

@@ -3,13 +3,14 @@ package httpcache
 import (
 	"bytes"
 	"context"
-	"github.com/darkweak/souin/api"
-	"github.com/darkweak/souin/cache/coalescing"
-	"github.com/darkweak/souin/cache/types"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/darkweak/souin/api"
+	"github.com/darkweak/souin/cache/coalescing"
+	"github.com/darkweak/souin/cache/types"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig"
@@ -41,11 +42,10 @@ type SouinCaddyPlugin struct {
 	logger        *zap.Logger
 	LogLevel      string `json:"log_level,omitempty"`
 	bufPool       *sync.Pool
-	Headers       []string                           `json:"headers,omitempty"`
-	Badger        configurationtypes.CacheProvider   `json:"badger,omitempty"`
-	Olric         configurationtypes.CacheProvider   `json:"olric,omitempty"`
-	TTL           configurationtypes.Duration        `json:"ttl,omitempty"`
-	YKeys         map[string]configurationtypes.YKey `json:"ykeys,omitempty"`
+	Headers       []string                         `json:"headers,omitempty"`
+	Badger        configurationtypes.CacheProvider `json:"badger,omitempty"`
+	Olric         configurationtypes.CacheProvider `json:"olric,omitempty"`
+	TTL           configurationtypes.Duration      `json:"ttl,omitempty"`
 }
 
 // CaddyModule returns the Caddy module information.
@@ -73,26 +73,29 @@ func (s *SouinCaddyPlugin) ServeHTTP(rw http.ResponseWriter, req *http.Request, 
 		return nil
 	}
 
-	getterCtx := getterContext{rw, req, next}
+	customWriter := &plugins.CustomWriter{
+		Response: &http.Response{},
+		Buf:      s.bufPool.Get().(*bytes.Buffer),
+		Rw:       rw,
+	}
+	getterCtx := getterContext{customWriter, req, next}
 	ctx := context.WithValue(req.Context(), getterContextCtxKey, getterCtx)
 	req = req.WithContext(ctx)
 	req.Header.Set("Date", time.Now().UTC().Format(time.RFC1123))
 	combo := ctx.Value(getterContextCtxKey).(getterContext)
-	customWriter := &plugins.CustomWriter{
-		Response:       &http.Response{},
-		ResponseWriter: rw,
-		BufPool: s.bufPool,
-	}
 
-	plugins.DefaultSouinPluginCallback(customWriter, req, s.Retriever, s.RequestCoalescing, func(_ http.ResponseWriter, _ *http.Request) error {
-		e := combo.next.ServeHTTP(customWriter, combo.req)
-		if e != nil {
+	plugins.DefaultSouinPluginCallback(customWriter, req, s.Retriever, nil, func(_ http.ResponseWriter, _ *http.Request) error {
+		var e error
+		if e = combo.next.ServeHTTP(customWriter, combo.req); e != nil {
 			return e
 		}
 
 		combo.req.Response = customWriter.Response
-		_, e = s.Retriever.GetTransport().(*rfc.VaryTransport).UpdateCacheEventually(combo.req)
+		if combo.req.Response, e = s.Retriever.GetTransport().(*rfc.VaryTransport).UpdateCacheEventually(combo.req); e != nil {
+			return e
+		}
 
+		_, _ = customWriter.Send()
 		return e
 	})
 
@@ -116,7 +119,6 @@ func (s *SouinCaddyPlugin) configurationPropertyMapper() error {
 			LogLevel:     s.LogLevel,
 		}
 	}
-	s.Configuration.Ykeys = s.YKeys
 	s.Configuration.DefaultCache = defaultCache
 	return nil
 }
@@ -198,8 +200,14 @@ func (s *SouinCaddyPlugin) Provision(ctx caddy.Context) error {
 		s.Retriever.GetTransport().(*rfc.VaryTransport).Provider = app.Provider
 	}
 
+	if app.SurrogateStorage == nil {
+		app.SurrogateStorage = s.Retriever.GetTransport().GetSurrogateKeys()
+	} else {
+		s.Retriever.GetTransport().SetSurrogateKeys(app.SurrogateStorage)
+	}
+
 	s.RequestCoalescing = coalescing.Initialize()
-	s.MapHandler = api.GenerateHandlerMap(s.Configuration, s.Retriever.GetTransport().GetProvider(), s.Retriever.GetTransport().GetYkeyStorage())
+	s.MapHandler = api.GenerateHandlerMap(s.Configuration, s.Retriever.GetTransport())
 	return nil
 }
 
@@ -271,6 +279,26 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 					}
 				}
 				cfg.API = apiConfiguration
+			case "cdn":
+				cdn := configurationtypes.CDN{}
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					directive := h.Val()
+					switch directive {
+					case "api_key":
+						cdn.APIKey = h.RemainingArgs()[0]
+					case "dynamic":
+						cdn.Dynamic = h.RemainingArgs()[0]
+					case "hostname":
+						cdn.Hostname = h.RemainingArgs()[0]
+					case "network":
+						cdn.Network = h.RemainingArgs()[0]
+					case "provider":
+						cdn.Provider = h.RemainingArgs()[0]
+					case "strategy":
+						cdn.Strategy = h.RemainingArgs()[0]
+					}
+				}
+				cfg.DefaultCache.CDN = cdn
 			case "regex":
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
@@ -321,6 +349,12 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 				if err == nil {
 					cfg.DefaultCache.TTL.Duration = ttl
 				}
+			case "stale":
+				args := h.RemainingArgs()
+				stale, err := time.ParseDuration(args[0])
+				if err == nil {
+					cfg.DefaultCache.Stale.Duration = stale
+				}
 			default:
 				return nil, h.Errf("unsupported root directive: %s", rootOption)
 			}
@@ -351,6 +385,11 @@ func parseCaddyfileHandlerDirective(h httpcaddyfile.Helper) (caddyhttp.Middlewar
 			ttl, err := time.ParseDuration(h.RemainingArgs()[0])
 			if err == nil {
 				sc.DefaultCache.TTL.Duration = ttl
+			}
+		case "stale":
+			stale, err := time.ParseDuration(h.RemainingArgs()[0])
+			if err == nil {
+				sc.DefaultCache.Stale.Duration = stale
 			}
 		}
 	}

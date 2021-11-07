@@ -1,9 +1,11 @@
-module github.com/caddyserver/cache-handler
+module github.com/darkweak/souin/plugins/caddy
 
 go 1.16
 
 require (
 	github.com/caddyserver/caddy/v2 v2.4.5
-	github.com/darkweak/souin v1.5.5
+	github.com/darkweak/souin v1.5.10
 	go.uber.org/zap v1.19.0
 )
+
+replace github.com/darkweak/souin v1.5.10 => ../..

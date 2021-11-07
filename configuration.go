@@ -10,16 +10,23 @@ import (
 // DefaultCache the struct
 type DefaultCache struct {
 	Badger      configurationtypes.CacheProvider
+	CDN         configurationtypes.CDN
 	Distributed bool
 	Headers     []string
 	Olric       configurationtypes.CacheProvider
 	Regex       configurationtypes.Regex
 	TTL         configurationtypes.Duration
+	Stale       configurationtypes.Duration
 }
 
 // GetBadger returns the Badger configuration
 func (d *DefaultCache) GetBadger() configurationtypes.CacheProvider {
 	return d.Badger
+}
+
+// GetCDN returns the CDN configuration
+func (d *DefaultCache) GetCDN() configurationtypes.CDN {
+	return d.CDN
 }
 
 // GetDistributed returns if it uses Olric or not as provider
@@ -47,6 +54,11 @@ func (d *DefaultCache) GetTTL() time.Duration {
 	return d.TTL.Duration
 }
 
+// GetStale returns the stale duration
+func (d *DefaultCache) GetStale() time.Duration {
+	return d.Stale.Duration
+}
+
 //Configuration holder
 type Configuration struct {
 	DefaultCache *DefaultCache
@@ -54,7 +66,6 @@ type Configuration struct {
 	URLs         map[string]configurationtypes.URL
 	LogLevel     string
 	logger       *zap.Logger
-	Ykeys        map[string]configurationtypes.YKey
 }
 
 // GetUrls get the urls list in the configuration
@@ -88,6 +99,11 @@ func (c *Configuration) SetLogger(l *zap.Logger) {
 }
 
 // GetYkeys get the ykeys list
-func (c *Configuration) GetYkeys() map[string]configurationtypes.YKey {
-	return c.Ykeys
+func (c *Configuration) GetYkeys() map[string]configurationtypes.SurrogateKeys {
+	return nil
+}
+
+// GetSurrogateKeys get the surrogate keys list
+func (c *Configuration) GetSurrogateKeys() map[string]configurationtypes.SurrogateKeys {
+	return nil
 }

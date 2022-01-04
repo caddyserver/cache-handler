@@ -1,0 +1,77 @@
+{
+  "apps": {
+    "cache": {
+      "headers": [
+        "Content-Type",
+        "Authorization"
+      ],
+      "log_level": "info",
+      "olric": {
+        "path": "path/to/olric.yml"
+      },
+      "ttl": "1000s"
+    },
+    "http": {
+      "servers": {
+        "": {
+          "listen": [":80"],
+          "routes": [
+            {
+              "match": [
+                {
+                  "header": {
+                    "Content-Type": ["*"]
+                  },
+                  "path": [
+                    "/a*"
+                  ]
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "cache",
+                  "ttl": "30s"
+                }
+              ]
+            },
+            {
+              "match": [
+                {
+                  "header": {
+                    "Content-Type": ["*"]
+                  },
+                  "path": [
+                    "/b*"
+                  ]
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "cache",
+                  "headers": []
+                }
+              ]
+            },
+            {
+              "match": [
+                {
+                  "header": {
+                    "Content-Type": ["*"]
+                  },
+                  "path": [
+                    "*"
+                  ]
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "cache"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

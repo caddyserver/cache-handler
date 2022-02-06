@@ -38,14 +38,15 @@ func init() {
 // SouinCaddyPlugin declaration.
 type SouinCaddyPlugin struct {
 	plugins.SouinBasePlugin
-	Configuration *Configuration
-	logger        *zap.Logger
-	LogLevel      string `json:"log_level,omitempty"`
-	bufPool       *sync.Pool
-	Headers       []string                         `json:"headers,omitempty"`
-	Badger        configurationtypes.CacheProvider `json:"badger,omitempty"`
-	Olric         configurationtypes.CacheProvider `json:"olric,omitempty"`
-	TTL           configurationtypes.Duration      `json:"ttl,omitempty"`
+	Configuration       *Configuration
+	logger              *zap.Logger
+	LogLevel            string `json:"log_level,omitempty"`
+	bufPool             *sync.Pool
+	Headers             []string                         `json:"headers,omitempty"`
+	Badger              configurationtypes.CacheProvider `json:"badger,omitempty"`
+	Olric               configurationtypes.CacheProvider `json:"olric,omitempty"`
+	TTL                 configurationtypes.Duration      `json:"ttl,omitempty"`
+	DefaultCacheControl string                           `json:"default_cache_control,omitempty"`
 }
 
 // CaddyModule returns the Caddy module information.
@@ -108,11 +109,12 @@ func (s *SouinCaddyPlugin) configurationPropertyMapper() error {
 		return nil
 	}
 	defaultCache := &DefaultCache{
-		Badger:      s.Badger,
-		Distributed: s.Olric.URL != "" || s.Olric.Path != "" || s.Olric.Configuration != nil,
-		Headers:     s.Headers,
-		Olric:       s.Olric,
-		TTL:         s.TTL,
+		Badger:              s.Badger,
+		DefaultCacheControl: s.DefaultCacheControl,
+		Distributed:         s.Olric.URL != "" || s.Olric.Path != "" || s.Olric.Configuration != nil,
+		Headers:             s.Headers,
+		Olric:               s.Olric,
+		TTL:                 s.TTL,
 	}
 	if s.Configuration == nil {
 		s.Configuration = &Configuration{
@@ -140,8 +142,9 @@ func (s *SouinCaddyPlugin) FromApp(app *SouinApp) error {
 
 	if s.Configuration.DefaultCache == nil {
 		s.Configuration.DefaultCache = &DefaultCache{
-			Headers: app.Headers,
-			TTL:     app.TTL,
+			Headers:             app.Headers,
+			TTL:                 app.TTL,
+			DefaultCacheControl: app.DefaultCacheControl,
 		}
 		return nil
 	}
@@ -153,6 +156,9 @@ func (s *SouinCaddyPlugin) FromApp(app *SouinApp) error {
 	}
 	if dc.TTL.Duration == 0 {
 		s.Configuration.DefaultCache.TTL = appDc.TTL
+	}
+	if dc.DefaultCacheControl == "" {
+		s.Configuration.DefaultCache.DefaultCacheControl = appDc.DefaultCacheControl
 	}
 	if dc.Olric.URL == "" || dc.Olric.Path == "" || dc.Olric.Configuration == nil {
 		s.Configuration.DefaultCache.Distributed = appDc.Distributed
@@ -234,6 +240,7 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 			TTL: configurationtypes.Duration{
 				Duration: 120 * time.Second,
 			},
+			DefaultCacheControl: "",
 		},
 		URLs: make(map[string]configurationtypes.URL),
 	}
@@ -249,6 +256,19 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 					switch directive {
 					case "basepath":
 						apiConfiguration.BasePath = h.RemainingArgs()[0]
+					case "prometheus":
+						apiConfiguration.Prometheus = configurationtypes.APIEndpoint{}
+						for nesting := h.Nesting(); h.NextBlock(nesting); {
+							directive := h.Val()
+							switch directive {
+							case "basepath":
+								apiConfiguration.Prometheus.BasePath = h.RemainingArgs()[0]
+							case "enable":
+								apiConfiguration.Prometheus.Enable, _ = strconv.ParseBool(h.RemainingArgs()[0])
+							case "security":
+								apiConfiguration.Prometheus.Security, _ = strconv.ParseBool(h.RemainingArgs()[0])
+							}
+						}
 					case "souin":
 						apiConfiguration.Souin = configurationtypes.APIEndpoint{}
 						for nesting := h.Nesting(); h.NextBlock(nesting); {
@@ -278,6 +298,19 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 					}
 				}
 				cfg.API = apiConfiguration
+			case "badger":
+				provider := configurationtypes.CacheProvider{}
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					directive := h.Val()
+					switch directive {
+					case "path":
+						urlArgs := h.RemainingArgs()
+						provider.Path = urlArgs[0]
+					case "configuration":
+						provider.Configuration = parseCaddyfileRecursively(h)
+					}
+				}
+				cfg.DefaultCache.Badger = provider
 			case "cdn":
 				cdn := configurationtypes.CDN{}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
@@ -298,32 +331,14 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 					}
 				}
 				cfg.DefaultCache.CDN = cdn
-			case "regex":
-				for nesting := h.Nesting(); h.NextBlock(nesting); {
-					directive := h.Val()
-					switch directive {
-					case "exclude":
-						cfg.DefaultCache.Regex.Exclude = h.RemainingArgs()[0]
-					}
-				}
+			case "default_cache_control":
+				args := h.RemainingArgs()
+				cfg.DefaultCache.DefaultCacheControl = args[0]
 			case "headers":
 				cfg.DefaultCache.Headers = append(cfg.DefaultCache.Headers, h.RemainingArgs()...)
 			case "log_level":
 				args := h.RemainingArgs()
 				cfg.LogLevel = args[0]
-			case "badger":
-				provider := configurationtypes.CacheProvider{}
-				for nesting := h.Nesting(); h.NextBlock(nesting); {
-					directive := h.Val()
-					switch directive {
-					case "path":
-						urlArgs := h.RemainingArgs()
-						provider.Path = urlArgs[0]
-					case "configuration":
-						provider.Configuration = parseCaddyfileRecursively(h)
-					}
-				}
-				cfg.DefaultCache.Badger = provider
 			case "olric":
 				cfg.DefaultCache.Distributed = true
 				provider := configurationtypes.CacheProvider{}
@@ -341,17 +356,25 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 					}
 				}
 				cfg.DefaultCache.Olric = provider
-			case "ttl":
-				args := h.RemainingArgs()
-				ttl, err := time.ParseDuration(args[0])
-				if err == nil {
-					cfg.DefaultCache.TTL.Duration = ttl
+			case "regex":
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					directive := h.Val()
+					switch directive {
+					case "exclude":
+						cfg.DefaultCache.Regex.Exclude = h.RemainingArgs()[0]
+					}
 				}
 			case "stale":
 				args := h.RemainingArgs()
 				stale, err := time.ParseDuration(args[0])
 				if err == nil {
 					cfg.DefaultCache.Stale.Duration = stale
+				}
+			case "ttl":
+				args := h.RemainingArgs()
+				ttl, err := time.ParseDuration(args[0])
+				if err == nil {
+					cfg.DefaultCache.TTL.Duration = ttl
 				}
 			default:
 				return nil, h.Errf("unsupported root directive: %s", rootOption)
@@ -377,17 +400,19 @@ func parseCaddyfileHandlerDirective(h httpcaddyfile.Helper) (caddyhttp.Middlewar
 	for h.Next() {
 		directive := h.Val()
 		switch directive {
+		case "default_cache_control":
+			sc.DefaultCache.DefaultCacheControl = h.RemainingArgs()[0]
 		case "headers":
 			sc.DefaultCache.Headers = h.RemainingArgs()
-		case "ttl":
-			ttl, err := time.ParseDuration(h.RemainingArgs()[0])
-			if err == nil {
-				sc.DefaultCache.TTL.Duration = ttl
-			}
 		case "stale":
 			stale, err := time.ParseDuration(h.RemainingArgs()[0])
 			if err == nil {
 				sc.DefaultCache.Stale.Duration = stale
+			}
+		case "ttl":
+			ttl, err := time.ParseDuration(h.RemainingArgs()[0])
+			if err == nil {
+				sc.DefaultCache.TTL.Duration = ttl
 			}
 		}
 	}

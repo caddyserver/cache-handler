@@ -5,9 +5,8 @@
     }
     cache {
         api {
-            souin {
-                enable true
-            }
+            prometheus
+            souin
         }
         regex {
             exclude /test2.*
@@ -15,6 +14,7 @@
         headers Content-Type Authorization
         log_level debug
         ttl 1000s
+        default_cache_control public
     }
 }
 
@@ -37,6 +37,18 @@ cache @match2 {
 
 cache @matchdefault {
     ttl 5s
+}
+
+route /cache-s-maxage {
+    cache
+    header Cache-Control "s-maxage=10"
+    respond "Hello, s-maxage!"
+}
+
+route /cache-maxage {
+    cache
+    header Cache-Control "max-age=5"
+    respond "Hello, max-age!"
 }
 
 cache @souin-api {}

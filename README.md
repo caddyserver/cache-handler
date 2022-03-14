@@ -10,7 +10,6 @@ This is a distributed HTTP cache module for Caddy based on [Souin](https://githu
  * REST API to purge the cache and list stored resources.
  * Builtin support for distributed cache.
 
-
 ## Example Configurations
 There is the fully configuration below
 ```caddy
@@ -20,6 +19,7 @@ There is the fully configuration below
         level debug
     }
     cache {
+        allowed_http_verbs GET POST PATCH
         api {
             basepath /some-basepath
             prometheus
@@ -29,9 +29,6 @@ There is the fully configuration below
         }
         badger {
             path the_path_to_a_file.json
-            configuration {
-                # Your badger configuration here
-            }
         }
         cdn {
             api_key XXXX
@@ -72,16 +69,79 @@ respond "Hello World!"
 
 cache @match {
     ttl 5s
+    badger {
+        path /tmp/badger/first-match
+        configuration {
+            # Required value
+            ValueDir <string>
+
+            # Optional
+            SyncWrites <bool>
+            NumVersionsToKeep <int>
+            ReadOnly <bool>
+            Compression <int>
+            InMemory <bool>
+            MetricsEnabled <bool>
+            MemTableSize <int>
+            BaseTableSize <int>
+            BaseLevelSize <int>
+            LevelSizeMultiplier <int>
+            TableSizeMultiplier <int>
+            MaxLevels <int>
+            VLogPercentile <float>
+            ValueThreshold <int>
+            NumMemtables <int>
+            BlockSize <int>
+            BloomFalsePositive <float>
+            BlockCacheSize <int>
+            IndexCacheSize <int>
+            NumLevelZeroTables <int>
+            NumLevelZeroTablesStall <int>
+            ValueLogFileSize <int>
+            ValueLogMaxEntries <int>
+            NumCompactors <int>
+            CompactL0OnClose <bool>
+            LmaxCompaction <bool>
+            ZSTDCompressionLevel <int>
+            VerifyValueChecksum <bool>
+            EncryptionKey <string>
+            EncryptionKey <Duration>
+            BypassLockGuard <bool>
+            ChecksumVerificationMode <int>
+            DetectConflicts <bool>
+            NamespaceOffset <int>
+        }
+    }
 }
 
 cache @match2 {
     ttl 50s
+    badger {
+        path /tmp/badger/second-match
+        configuration {
+            ValueDir match2
+            ValueLogFileSize 16777216
+            MemTableSize 4194304
+            ValueThreshold 524288
+            BypassLockGuard true
+        }
+    }
     headers Authorization
     default_cache_control "public, max-age=86400"
 }
 
 cache @matchdefault {
     ttl 5s
+    badger {
+        path /tmp/badger/default-match
+        configuration {
+            ValueDir default
+            ValueLogFileSize 16777216
+            MemTableSize 4194304
+            ValueThreshold 524288
+            BypassLockGuard true
+        }
+    }
 }
 
 cache @souin-api {}
@@ -89,6 +149,7 @@ cache @souin-api {}
 What does these directives mean?  
 |  Key                      |  Description                                                                                                                                 |  Value example                                                                                                          |
 |:--------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| `allowed_http_verbs`      | The HTTP verbs allowed to be cached                                                                                                          | `GET POST PATCH`<br/><br/>`(default: GET HEAD)`                                                                         |
 | `api`                     | The cache-handler API cache management                                                                                                       |                                                                                                                         |
 | `api.basepath`            | BasePath for all APIs to avoid conflicts                                                                                                     | `/your-non-conflict-route`<br/><br/>`(default: /souin-api)`                                                             |
 | `api.prometheus`          | Enable the Prometheus metrics                                                                                                                |                                                                                                                         |
@@ -120,7 +181,6 @@ Other resources
 ---------------
 You can find an example for the [Caddyfile](Caddyfile) or the [JSON file](configuration.json).  
 See the [Souin](https://github.com/darkweak/souin) configuration for the full configuration, and its associated [Caddyfile](https://github.com/darkweak/souin/blob/master/plugins/caddy/Caddyfile)  
-
 
 ## TODO
 

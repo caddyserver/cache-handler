@@ -28,6 +28,16 @@ respond "Hello World!"
 
 cache @match {
     ttl 5s
+    badger {
+        path /tmp/badger
+        configuration {
+            ValueDir test
+            ValueLogFileSize 16777216
+            MemTableSize 4194304
+            ValueThreshold 524288
+            BypassLockGuard true
+        }
+    }
 }
 
 cache @match2 {
@@ -37,6 +47,14 @@ cache @match2 {
 
 cache @matchdefault {
     ttl 5s
+}
+
+route /vary {
+    cache {
+        ttl 15s
+    }
+    header Vary X-Something
+    respond "Hello {http.request.header.X-Something}"
 }
 
 route /cache-s-maxage {
@@ -49,6 +67,18 @@ route /cache-maxage {
     cache
     header Cache-Control "max-age=5"
     respond "Hello, max-age!"
+}
+
+route /not-modified {
+    cache {
+        ttl 5s
+    }
+    reverse_proxy 127.0.0.1:9000
+}
+
+route /no-reverse-proxy {
+    cache
+    reverse_proxy 127.0.0.1:9000
 }
 
 cache @souin-api {}

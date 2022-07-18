@@ -14,8 +14,9 @@ type SouinApp struct {
 	*DefaultCache
 	Provider         types.AbstractProviderInterface
 	SurrogateStorage providers.SurrogateInterface
-	API              configurationtypes.API `json:"api,omitempty"`
-	LogLevel         string                 `json:"log_level,omitempty"`
+	CacheKeys        map[string]configurationtypes.Key `json:"cache_keys,omitempty"`
+	API              configurationtypes.API            `json:"api,omitempty"`
+	LogLevel         string                            `json:"log_level,omitempty"`
 }
 
 func init() {
@@ -29,6 +30,8 @@ func (s *SouinApp) Provision(_ caddy.Context) error {
 
 // Start will start the App
 func (s SouinApp) Start() error {
+	up.Delete(stored_providers_key)
+	up.LoadOrStore(stored_providers_key, newStorageProvider())
 	if s.DefaultCache != nil && s.DefaultCache.GetTTL() == 0 {
 		return errors.New("Invalid/Incomplete default cache declaration")
 	}

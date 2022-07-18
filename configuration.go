@@ -9,16 +9,20 @@ import (
 
 // DefaultCache the struct
 type DefaultCache struct {
-	AllowedHTTPVerbs    []string
-	Badger              configurationtypes.CacheProvider
-	CDN                 configurationtypes.CDN
-	DefaultCacheControl string
-	Distributed         bool
-	Headers             []string
-	Olric               configurationtypes.CacheProvider
-	Regex               configurationtypes.Regex
-	TTL                 configurationtypes.Duration
-	Stale               configurationtypes.Duration
+	AllowedHTTPVerbs    []string                         `json:"allowed_http_verbs"`
+	Badger              configurationtypes.CacheProvider `json:"badger"`
+	CacheName           string                           `json:"cache_name"`
+	CDN                 configurationtypes.CDN           `json:"cdn"`
+	DefaultCacheControl string                           `json:"default_cache_control"`
+	Distributed         bool                             `json:"distributed"`
+	Headers             []string                         `json:"headers"`
+	Key                 configurationtypes.Key           `json:"key"`
+	Olric               configurationtypes.CacheProvider `json:"olric"`
+	Etcd                configurationtypes.CacheProvider `json:"etcd"`
+	Nuts                configurationtypes.CacheProvider `json:"nuts"`
+	Regex               configurationtypes.Regex         `json:"regex"`
+	TTL                 configurationtypes.Duration      `json:"ttl"`
+	Stale               configurationtypes.Duration      `json:"stale"`
 }
 
 // GetAllowedHTTPVerbs returns the allowed verbs to cache
@@ -29,6 +33,11 @@ func (d *DefaultCache) GetAllowedHTTPVerbs() []string {
 // GetBadger returns the Badger configuration
 func (d *DefaultCache) GetBadger() configurationtypes.CacheProvider {
 	return d.Badger
+}
+
+// GetCacheName returns the cache name to use in the Cache-Status response header
+func (d *DefaultCache) GetCacheName() string {
+	return d.CacheName
 }
 
 // GetCDN returns the CDN configuration
@@ -44,6 +53,21 @@ func (d *DefaultCache) GetDistributed() bool {
 // GetHeaders returns the default headers that should be cached
 func (d *DefaultCache) GetHeaders() []string {
 	return d.Headers
+}
+
+// GetKey returns the default Key generation strategy
+func (d *DefaultCache) GetKey() configurationtypes.Key {
+	return d.Key
+}
+
+// GetEtcd returns etcd configuration
+func (d *DefaultCache) GetEtcd() configurationtypes.CacheProvider {
+	return d.Etcd
+}
+
+// GetNuts returns nuts configuration
+func (d *DefaultCache) GetNuts() configurationtypes.CacheProvider {
+	return d.Nuts
 }
 
 // GetOlric returns olric configuration
@@ -66,7 +90,7 @@ func (d *DefaultCache) GetStale() time.Duration {
 	return d.Stale.Duration
 }
 
-// GetStale returns the stale duration
+// GetDefaultCacheControl returns the configured default cache control value
 func (d *DefaultCache) GetDefaultCacheControl() string {
 	return d.DefaultCacheControl
 }
@@ -75,8 +99,10 @@ func (d *DefaultCache) GetDefaultCacheControl() string {
 type Configuration struct {
 	DefaultCache *DefaultCache
 	API          configurationtypes.API
+	CfgCacheKeys map[string]configurationtypes.Key
 	URLs         map[string]configurationtypes.URL
 	LogLevel     string
+	cacheKeys    map[configurationtypes.RegValue]configurationtypes.Key
 	logger       *zap.Logger
 }
 
@@ -119,3 +145,10 @@ func (c *Configuration) GetYkeys() map[string]configurationtypes.SurrogateKeys {
 func (c *Configuration) GetSurrogateKeys() map[string]configurationtypes.SurrogateKeys {
 	return nil
 }
+
+// GetCacheKeys get the cache keys rules to override
+func (c *Configuration) GetCacheKeys() map[configurationtypes.RegValue]configurationtypes.Key {
+	return c.cacheKeys
+}
+
+var _ configurationtypes.AbstractConfigurationInterface = (*Configuration)(nil)

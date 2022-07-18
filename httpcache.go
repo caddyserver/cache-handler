@@ -301,7 +301,7 @@ func (s *SouinCaddyPlugin) Provision(ctx caddy.Context) error {
 
 	if l {
 		s.logger.Sugar().Debug("Loaded coalescing layer from cache.")
-		s.Retriever.GetTransport().GetCoalescingLayerStorage().Destruct()
+		_ = s.Retriever.GetTransport().GetCoalescingLayerStorage().Destruct()
 		s.Retriever.GetTransport().(*rfc.VaryTransport).CoalescingLayerStorage = v.(*types.CoalescingLayerStorage)
 	}
 

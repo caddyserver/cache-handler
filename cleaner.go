@@ -43,7 +43,7 @@ func (s *SouinCaddyPlugin) Cleanup() error {
 
 	for _, v := range td {
 		s.logger.Sugar().Debugf("Cleaning %v\n", v)
-		up.Delete(v)
+		_, _ = up.Delete(v)
 	}
 
 	return nil

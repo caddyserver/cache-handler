@@ -8,7 +8,20 @@ This is a distributed HTTP cache module for Caddy based on [Souin](https://githu
  * [RFC 7234](https://httpwg.org/specs/rfc7234.html) compliant HTTP Cache.
  * Sets [the `Cache-Status` HTTP Response Header](https://httpwg.org/http-extensions/draft-ietf-httpbis-cache-header.html)
  * REST API to purge the cache and list stored resources.
+ * ESI tags processing (using the [go-esi package](https://github.com/darkweak/go-esi)).
  * Builtin support for distributed cache.
+
+## Minimal Configuration
+Using the minimal configuration the responses will be cached for `120s`
+```caddy
+{
+    order cache before rewrite
+    cache
+}
+
+cache * {
+}
+```
 
 ## Example Configurations
 There is the fully configuration below
@@ -173,6 +186,91 @@ cache @matchdefault {
     }
 }
 
+route /badger-configuration {
+    cache {
+        ttl 15s
+        badger {
+            configuration {
+                Dir /tmp/badger-configuration
+                ValueDir match2
+                ValueLogFileSize 16777216
+                MemTableSize 4194304
+                ValueThreshold 524288
+            }
+        }
+    }
+    respond "Hello badger"
+}
+
+route /etcd-configuration {
+    cache {
+        ttl 15s
+        etcd {
+            configuration {
+                Endpoints etcd1:2379 etcd2:2379 etcd3:2379
+                AutoSyncInterval 1s
+                DialTimeout 1s
+                DialKeepAliveTime 1s
+                DialKeepAliveTimeout 1s
+                MaxCallSendMsgSize 10000000
+                MaxCallRecvMsgSize 10000000
+                Username john
+                Password doe
+                RejectOldCluster false
+                PermitWithoutStream false
+            }
+        }
+    }
+    respond "Hello etcd"
+}
+
+route /nuts-configuration {
+    cache {
+        ttl 15s
+        nuts {
+            configuration {
+                Dir /tmp/nuts-configuration
+                EntryIdxMode 1
+                RWMode 0
+                SegmentSize 1024
+                NodeNum 42
+                SyncEnable true
+                StartFileLoadingMode 1
+            }
+        }
+    }
+    respond "Hello nuts"
+}
+
+route /redis-configuration {
+    cache {
+        ttl 15s
+        redis {
+            configuration {
+                Network my-network
+                Addr 127.0.0.1:6789
+                Username user
+                Password password
+                DB 1
+                MaxRetries 1
+                MinRetryBackoff 5s
+                MaxRetryBackoff 5s
+                DialTimeout 5s
+                ReadTimeout 5s
+                WriteTimeout 5s
+                PoolFIFO true
+                PoolSize 99999
+                PoolTimeout 10s
+                MinIdleConns 100
+                MaxIdleConns 100
+                ConnMaxIdleTime 5s
+                ConnMaxLifetime 5s
+            }
+        }
+    }
+    respond "Hello redis"
+}
+
 cache @souin-api {}
 ```
 What does these directives mean?  
@@ -216,8 +314,14 @@ What does these directives mean?
 | `olric`                            | Configure the Olric cache storage                                                                                                            |                                                                                                                         |
 | `olric.path`                       | Configure Olric with a file                                                                                                                  | `/anywhere/olric_configuration.json`                                                                                    |
 | `olric.configuration`              | Configure Olric directly in the Caddyfile or your JSON caddy configuration                                                                   | [See the Olric configuration for the options](https://github.com/buraksezer/olric/blob/master/cmd/olricd/olricd.yaml/)  |
+| `redis`                            | Configure the Redis cache storage                                                                                                            |                                                                                                                         |
+| `redis.url`                        | Set the Redis url storage                                                                                                                    | `localhost:6379`                                                                                                        |
+| `redis.configuration`              | Configure Redis directly in the Caddyfile or your JSON caddy configuration                                                                   | [See the Nuts configuration for the options](https://github.com/nutsdb/nutsdb#default-options)                          |
 | `regex.exclude`                    | The regex used to prevent paths being cached                                                                                                 | `^[A-z]+.*$`                                                                                                            |
 | `stale`                            | The stale duration                                                                                                                           | `25m`                                                                                                                   |
+| `timeout`                          | The timeout configuration                                                                                                                    |                                                                                                                         |
+| `timeout.backend`                  | The timeout duration to consider the backend as unreachable                                                                                  | `10s`                                                                                                                   |
+| `timeout.cache`                    | The timeout duration to consider the cache provider as unreachable                                                                           | `10ms`                                                                                                                  |
 | `ttl`                              | The TTL duration                                                                                                                             | `120s`                                                                                                                  |
 | `log_level`                        | The log level                                                                                                                                | `One of DEBUG, INFO, WARN, ERROR, DPANIC, PANIC, FATAL it's case insensitive`                                           |
 

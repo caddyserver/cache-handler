@@ -18,9 +18,11 @@ type DefaultCache struct {
 	Headers             []string                         `json:"headers"`
 	Key                 configurationtypes.Key           `json:"key"`
 	Olric               configurationtypes.CacheProvider `json:"olric"`
+	Redis               configurationtypes.CacheProvider `json:"redis"`
 	Etcd                configurationtypes.CacheProvider `json:"etcd"`
 	Nuts                configurationtypes.CacheProvider `json:"nuts"`
 	Regex               configurationtypes.Regex         `json:"regex"`
+	Timeout             configurationtypes.Timeout       `json:"timeout"`
 	TTL                 configurationtypes.Duration      `json:"ttl"`
 	Stale               configurationtypes.Duration      `json:"stale"`
 }
@@ -75,9 +77,19 @@ func (d *DefaultCache) GetOlric() configurationtypes.CacheProvider {
 	return d.Olric
 }
 
+// GetRedis returns redis configuration
+func (d *DefaultCache) GetRedis() configurationtypes.CacheProvider {
+	return d.Redis
+}
+
 // GetRegex returns the regex that shouldn't be cached
 func (d *DefaultCache) GetRegex() configurationtypes.Regex {
 	return d.Regex
+}
+
+// GetTimeout returns the backend and cache timeouts
+func (d *DefaultCache) GetTimeout() configurationtypes.Timeout {
+	return d.Timeout
 }
 
 // GetTTL returns the default TTL

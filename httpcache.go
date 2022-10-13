@@ -49,7 +49,7 @@ type SouinCaddyPlugin struct {
 	Configuration *Configuration
 	logger        *zap.Logger
 	cacheKeys     map[configurationtypes.RegValue]configurationtypes.Key
-	// Log level.
+	// Logger level, fallback on caddy's one when not redefined.
 	LogLevel string `json:"log_level,omitempty"`
 	bufPool  *sync.Pool
 	// Allowed HTTP verbs to be cached by the system.

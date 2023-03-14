@@ -136,9 +136,11 @@ type Configuration struct {
 	// Override the ttl depending the cases.
 	URLs map[string]configurationtypes.URL
 	// Logger level, fallback on caddy's one when not redefined.
-	LogLevel  string
-	cacheKeys map[configurationtypes.RegValue]configurationtypes.Key
-	logger    *zap.Logger
+	LogLevel string
+	// SurrogateKeys contains the surrogate keys to use with a predefined mapping
+	SurrogateKeys map[string]configurationtypes.SurrogateKeys
+	cacheKeys     map[configurationtypes.RegValue]configurationtypes.Key
+	logger        *zap.Logger
 }
 
 // GetUrls get the urls list in the configuration
@@ -264,6 +266,16 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isBlocking b
 					switch directive {
 					case "basepath":
 						apiConfiguration.BasePath = h.RemainingArgs()[0]
+					case "debug":
+						apiConfiguration.Debug = configurationtypes.APIEndpoint{}
+						apiConfiguration.Debug.Enable = true
+						for nesting := h.Nesting(); h.NextBlock(nesting); {
+							directive := h.Val()
+							switch directive {
+							case "basepath":
+								apiConfiguration.Debug.BasePath = h.RemainingArgs()[0]
+							}
+						}
 					case "prometheus":
 						apiConfiguration.Prometheus = configurationtypes.APIEndpoint{}
 						apiConfiguration.Prometheus.Enable = true
@@ -319,6 +331,8 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isBlocking b
 							ck.DisableHost = true
 						case "disable_method":
 							ck.DisableMethod = true
+						case "disable_query":
+							ck.DisableQuery = true
 						case "hide":
 							ck.Hide = true
 						case "headers":
@@ -333,14 +347,18 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isBlocking b
 				args := h.RemainingArgs()
 				cfg.DefaultCache.CacheName = args[0]
 			case "cdn":
-				cdn := configurationtypes.CDN{}
+				cdn := configurationtypes.CDN{
+					Dynamic: true,
+				}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
 					switch directive {
 					case "api_key":
 						cdn.APIKey = h.RemainingArgs()[0]
 					case "dynamic":
-						cdn.Dynamic = true
+						if len(h.RemainingArgs()) > 0 {
+							cdn.Dynamic, _ = strconv.ParseBool(h.RemainingArgs()[0])
+						}
 					case "hostname":
 						cdn.Hostname = h.RemainingArgs()[0]
 					case "network":
@@ -379,6 +397,8 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isBlocking b
 						config_key.DisableHost = true
 					case "disable_method":
 						config_key.DisableMethod = true
+					case "disable_query":
+						config_key.DisableQuery = true
 					case "hide":
 						config_key.Hide = true
 					case "headers":

@@ -308,7 +308,7 @@ The redis provider must have either the URL or the configuration directive.
 redis-url.com {
     cache {
         redis {
-            url 127.0.0.1:6789
+            url 127.0.0.1:6379
         }
     }
 }
@@ -319,7 +319,7 @@ redis-configuration.com {
         redis {
             configuration {
                 Network my-network
-                Addr 127.0.0.1:6789
+                Addr 127.0.0.1:6379
                 Username user
                 Password password
                 DB 1
@@ -356,6 +356,7 @@ What does these directives mean?
 | `cache_name`                              | Override the cache name to use in the Cache-Status response header                                                                           | `Another` `Caddy` `Cache-Handler` `Souin`                                                                               |
 | `cache_keys`                              | Define the key generation rules for each URI matching the key regexp                                                                         |                                                                                                                         |
 | `cache_keys.{your regexp}`                | Regexp that the URI should match to override the key generation                                                                              | `.+\.css`                                                                                                               |
+| `cache_keys.{your regexp}`                | Regexp that the URI should match to override the key generation                                                                              | `.+\.css`                                                                                                               |
 | `cache_keys.{your regexp}.disable_body`   | Disable the body part in the key matching the regexp (GraphQL context)                                                                       | `true`<br/><br/>`(default: false)`                                                                                      |
 | `cache_keys.{your regexp}.disable_host`   | Disable the host part in the key matching the regexp                                                                                         | `true`<br/><br/>`(default: false)`                                                                                      |
 | `cache_keys.{your regexp}.disable_method` | Disable the method part in the key matching the regexp                                                                                       | `true`<br/><br/>`(default: false)`                                                                                      |
@@ -364,7 +365,7 @@ What does these directives mean?
 | `cdn`                                     | The CDN management, if you use any cdn to proxy your requests Souin will handle that                                                         |                                                                                                                         |
 | `cdn.provider`                            | The provider placed before Souin                                                                                                             | `akamai`<br/><br/>`fastly`<br/><br/>`souin`                                                                             |
 | `cdn.api_key`                             | The api key used to access to the provider                                                                                                   | `XXXX`                                                                                                                  |
-| `cdn.dynamic`                             | Enable the dynamic keys returned by your backend application                                                                                 | `(default: false)`                                                                                                      |
+| `cdn.dynamic`                             | Enable the dynamic keys returned by your backend application                                                                                 | `(default: true)`                                                                                                       |
 | `cdn.email`                               | The api key used to access to the provider if required, depending the provider                                                               | `XXXX`                                                                                                                  |
 | `cdn.hostname`                            | The hostname if required, depending the provider                                                                                             | `domain.com`                                                                                                            |
 | `cdn.network`                             | The network if required, depending the provider                                                                                              | `your_network`                                                                                                          |

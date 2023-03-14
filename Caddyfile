@@ -1,19 +1,27 @@
 {
     order cache before rewrite
+    debug
     log {
         level debug
     }
     cache {
+        allowed_http_verbs GET POST
         api {
             prometheus
             souin
         }
+        cdn {
+            dynamic
+            strategy hard
+        }
         regex {
             exclude /test2.*
         }
-        headers Content-Type Authorization
-        log_level debug
         ttl 1000s
+        timeout {
+            backend 10s
+            cache 100ms
+        }
         default_cache_control public
     }
 }
@@ -28,25 +36,155 @@ respond "Hello World!"
 
 cache @match {
     ttl 5s
-    badger {
-        path /tmp/badger
-        configuration {
-            ValueDir test
-            ValueLogFileSize 16777216
-            MemTableSize 4194304
-            ValueThreshold 524288
-            BypassLockGuard true
-        }
-    }
 }
 
 cache @match2 {
     ttl 50s
-    headers Authorization
 }
 
 cache @matchdefault {
     ttl 5s
+}
+
+route /badger-configuration {
+    cache {
+        ttl 15s
+        badger {
+            configuration {
+                Dir /tmp/badger-configuration
+                ValueDir match2
+                ValueLogFileSize 16777216
+                MemTableSize 4194304
+                ValueThreshold 524288
+            }
+        }
+    }
+    respond "Hello badger"
+}
+
+route /etcd {
+    cache {
+        ttl 5s
+        etcd {
+            configuration {
+                Endpoints etcd1:2379 etcd2:2379 etcd3:2379
+                AutoSyncInterval 1s
+                DialTimeout 1s
+                DialKeepAliveTime 1s
+                DialKeepAliveTimeout 1s
+                MaxCallSendMsgSize 10000000
+                MaxCallRecvMsgSize 10000000
+                Username john
+                Password doe
+                RejectOldCluster false
+                PermitWithoutStream false
+            }
+        }
+    }
+    respond "Hello etcd"
+}
+
+route /etcd-configuration {
+    cache {
+        ttl 5s
+        etcd {
+            configuration {
+                Endpoints etcd:2379 etcd:2379
+                AutoSyncInterval 1s
+                DialTimeout 1s
+                DialKeepAliveTime 1s
+                DialKeepAliveTimeout 1s
+                MaxCallSendMsgSize 10000000
+                MaxCallRecvMsgSize 10000000
+                RejectOldCluster false
+                PermitWithoutStream false
+            }
+        }
+    }
+    respond "Hello etcd"
+}
+
+route /nuts-configuration {
+    cache {
+        ttl 15s
+        nuts {
+            configuration {
+                Dir /tmp/nuts-configuration
+                EntryIdxMode 1
+                RWMode 0
+                SegmentSize 1024
+                NodeNum 42
+                SyncEnable true
+                StartFileLoadingMode 1
+            }
+        }
+    }
+    respond "Hello nuts"
+}
+
+route /redis {
+    cache {
+        ttl 5s
+        redis {
+            configuration {
+                Network my-network
+                Addr 127.0.0.1:6379
+                Username user
+                Password password
+                DB 1
+                MaxRetries 1
+                MinRetryBackoff 5s
+                MaxRetryBackoff 5s
+                DialTimeout 5s
+                ReadTimeout 5s
+                WriteTimeout 5s
+                PoolFIFO true
+                PoolSize 99999
+                PoolTimeout 10s
+                MinIdleConns 100
+                MaxIdleConns 100
+                ConnMaxIdleTime 5s
+                ConnMaxLifetime 5s
+            }
+        }
+    }
+    respond "Hello redis"
+}
+
+route /redis-configuration {
+    cache {
+        ttl 5s
+        redis {
+            configuration {
+                Addr 127.0.0.1:6379
+                DB 0
+                MaxRetries 1
+                MinRetryBackoff 5s
+                MaxRetryBackoff 5s
+                DialTimeout 5s
+                ReadTimeout 5s
+                WriteTimeout 5s
+                PoolFIFO true
+                PoolSize 99999
+                PoolTimeout 10s
+                MinIdleConns 100
+                MaxIdleConns 100
+                ConnMaxIdleTime 5s
+                ConnMaxLifetime 5s
+            }
+        }
+    }
+    respond "Hello redis"
+}
+
+route /redis-url {
+    cache {
+        ttl 5s
+        redis {
+            url 127.0.0.1:6379
+        }
+    }
+    respond "Hello redis url"
 }
 
 route /vary {
@@ -69,6 +207,15 @@ route /cache-maxage {
     respond "Hello, max-age!"
 }
 
+route /cache-maxstale {
+    cache {
+        ttl 3s
+        stale 5s
+    }
+    header Cache-Control "max-age=5"
+    respond "Hello, max-age!"
+}
+
 route /not-modified {
     cache {
         ttl 5s
@@ -81,4 +228,95 @@ route /no-reverse-proxy {
     reverse_proxy 127.0.0.1:9000
 }
 
-cache @souin-api
+route /surrogate-keys {
+    cache
+    header Surrogate-Key "KEY-{http.request.header.X-Surrogate-Key-Suffix}"
+    header Vary X-Surrogate-Key-Suffix,Accept-Encoding
+    respond "Hello {http.request.header.X-Surrogate-Key-Suffix}"
+}
+
+route /another-cache-status-name {
+    cache {
+        cache_name Another
+    }
+}
+
+route /backend-timeout {
+    cache {
+        timeout {
+            backend 1s
+            cache 1ms
+        }
+    }
+    reverse_proxy 127.0.0.1:8081
+}
+
+route /stream {
+    cache
+    reverse_proxy 127.0.0.1:81
+}
+
+route /gzip {
+    cache
+    encode {
+        gzip
+        minimum_length 5
+    }
+    header Content-Type text/plain
+    respond "Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip. Hello, gzip."
+}
+
+route /custom-key/without-* {
+    cache {
+        cache_keys {
+            body {
+                disable_body
+            }
+            host {
+                disable_host
+            }
+            method {
+                disable_method
+            }
+            everything-with-content-type {
+                disable_method
+                headers Content-Type
+            }
+        }
+    }
+    respond "Hello to the authenticated user."
+}
+
+route /cache-authorization {
+    cache {
+        cache_keys {
+            /.+ {
+                headers Authorization
+            }
+        }
+    }
+    header Souin-Cache-Control public
+    respond "Hello to the authenticated user."
+}
+
+cache @souin-api {
+}
+
+# ESI part
+route /esi-include {
+    cache
+    header Content-Type text/html
+    respond "<h1>ESI INCLUDE</h1>"
+}
+
+route /alt-esi-include {
+    cache
+    header Content-Type text/html
+    respond "<h1>ALTERNATE ESI INCLUDE</h1>"
+}
+
+route /esi {
+    cache
+    header Content-Type text/html
+    respond `<esi:include src="http://localhost:4443/esi-include" alt=http://localhost:4443/alt-esi-include />`
+}

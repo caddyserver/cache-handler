@@ -50,6 +50,7 @@ Here are all the available options for the global options
                 disable_body
                 disable_host
                 disable_method
+                disable_query
                 headers X-Token Authorization
                 hide
             }
@@ -115,6 +116,7 @@ Here are all the available options for the directive options
                 disable_body
                 disable_host
                 disable_method
+                disable_query
                 headers X-Token Authorization
             }
         }
@@ -133,6 +135,7 @@ Here are all the available options for the directive options
             disable_body
             disable_host
             disable_method
+            disable_query
             headers Content-Type Authorization
         }
         log_level debug
@@ -360,6 +363,7 @@ What does these directives mean?
 | `cache_keys.{your regexp}.disable_body`   | Disable the body part in the key matching the regexp (GraphQL context)                                                                       | `true`<br/><br/>`(default: false)`                                                                                      |
 | `cache_keys.{your regexp}.disable_host`   | Disable the host part in the key matching the regexp                                                                                         | `true`<br/><br/>`(default: false)`                                                                                      |
 | `cache_keys.{your regexp}.disable_method` | Disable the method part in the key matching the regexp                                                                                       | `true`<br/><br/>`(default: false)`                                                                                      |
+| `cache_keys.{your regexp}.disable_query`  | Disable the query string part in the key matching the regexp                                                                                 | `true`<br/><br/>`(default: false)`                                                                                      |
 | `cache_keys.{your regexp}.headers`        | Add headers to the key matching the regexp                                                                                                   | `Authorization Content-Type X-Additional-Header`                                                                        |
 | `cache_keys.{your regexp}.hide`           | Prevent the key from being exposed in the `Cache-Status` HTTP response header                                                                | `true`<br/><br/>`(default: false)`                                                                                      |
 | `cdn`                                     | The CDN management, if you use any cdn to proxy your requests Souin will handle that                                                         |                                                                                                                         |
@@ -377,6 +381,7 @@ What does these directives mean?
 | `key.disable_body`                        | Disable the body part in the key (GraphQL context)                                                                                           | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.disable_host`                        | Disable the host part in the key                                                                                                             | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.disable_method`                      | Disable the method part in the key                                                                                                           | `true`<br/><br/>`(default: false)`                                                                                      |
+| `key.disable_query`                       | Disable the query string part in the key                                                                                                     | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.headers`                             | Add headers to the key matching the regexp                                                                                                   | `Authorization Content-Type X-Additional-Header`                                                                        |
 | `key.hide`                                | Prevent the key from being exposed in the `Cache-Status` HTTP response header                                                                | `true`<br/><br/>`(default: false)`                                                                                      |
 | `nuts`                                    | Configure the Nuts cache storage                                                                                                             |                                                                                                                         |

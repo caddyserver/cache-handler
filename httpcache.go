@@ -228,14 +228,6 @@ func (s *SouinCaddyMiddleware) Provision(ctx caddy.Context) error {
 		return err
 	}
 
-	/*
-		s.cacheKeys = s.Configuration.cacheKeys
-		for _, cacheKey := range s.Configuration.CacheKeys {
-			for k, v := range cacheKey {
-				s.cacheKeys = append(s.cacheKeys, map[configurationtypes.RegValue]configurationtypes.Key{k: v})
-			}
-		}
-	*/
 	bh := middleware.NewHTTPCacheHandler(s.Configuration)
 	surrogates, ok := up.LoadOrStore(surrogate_key, bh.SurrogateKeyStorer)
 	if ok {

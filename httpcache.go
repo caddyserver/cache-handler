@@ -28,10 +28,9 @@ func init() {
 	httpcaddyfile.RegisterHandlerDirective(moduleName, parseCaddyfileHandlerDirective)
 }
 
-// SouinCaddyMiddleware development repository of the cache handler, allows
-// the user to set up an HTTP cache system, RFC-7234 compliant and
-// supports the tag based cache purge, distributed and not-distributed
-// storage, key generation tweaking.
+// SouinCaddyMiddleware allows the user to set up an HTTP cache system,
+// RFC-7234 compliant and supports the tag based cache purge,
+// distributed and not-distributed storage, key generation tweaking.
 type SouinCaddyMiddleware struct {
 	*middleware.SouinBaseHandler
 	logger        *zap.Logger

@@ -280,8 +280,6 @@ func (s *SouinCaddyMiddleware) Provision(ctx caddy.Context) error {
 		s.SouinBaseHandler.SurrogateKeyStorer = app.SurrogateStorage
 	}
 
-	// s.RequestCoalescing = coalescing.Initialize()
-	// s.MapHandler = api.GenerateHandlerMap(s.Configuration, s.Retriever.GetTransport())
 	return nil
 }
 

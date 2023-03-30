@@ -322,9 +322,7 @@ func (s *SouinCaddyMiddleware) UnmarshalCaddyfile(h *caddyfile.Dispenser) error 
 	s.Configuration = &Configuration{
 		DefaultCache: &dc,
 	}
-	err := parseConfiguration(s.Configuration, h, false)
-
-	return err
+	return parseConfiguration(s.Configuration, h, false)
 }
 
 // Interface guards

@@ -3,7 +3,6 @@ package httpcache
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/buraksezer/olric/config"
@@ -29,14 +28,15 @@ func init() {
 	httpcaddyfile.RegisterHandlerDirective(moduleName, parseCaddyfileHandlerDirective)
 }
 
-// SouinCaddyMiddleware allows the user to set up an HTTP cache system,
-// RFC-7234 compliant and supports the tag based cache purge,
-// distributed and not-distributed storage, key generation tweaking.
+// SouinCaddyMiddleware development repository of the cache handler, allows
+// the user to set up an HTTP cache system, RFC-7234 compliant and
+// supports the tag based cache purge, distributed and not-distributed
+// storage, key generation tweaking.
 type SouinCaddyMiddleware struct {
 	*middleware.SouinBaseHandler
 	logger        *zap.Logger
 	Configuration *Configuration
-	cacheKeys     map[configurationtypes.RegValue]configurationtypes.Key
+	cacheKeys     configurationtypes.CacheKeys
 	// Logger level, fallback on caddy's one when not redefined.
 	LogLevel string `json:"log_level,omitempty"`
 	// Allowed HTTP verbs to be cached by the system.
@@ -48,7 +48,7 @@ type SouinCaddyMiddleware struct {
 	// Configure the global key generation.
 	Key configurationtypes.Key `json:"key,omitempty"`
 	// Override the cache key generation matching the pattern.
-	CacheKeys map[string]configurationtypes.Key `json:"cache_keys,omitempty"`
+	CacheKeys configurationtypes.CacheKeys `json:"cache_keys,omitempty"`
 	// Configure the Badger cache storage.
 	Nuts configurationtypes.CacheProvider `json:"nuts,omitempty"`
 	// Enable the Etcd distributed cache storage.
@@ -105,7 +105,7 @@ func (s *SouinCaddyMiddleware) configurationPropertyMapper() error {
 	}
 	if s.Configuration == nil {
 		s.Configuration = &Configuration{
-			cacheKeys:    s.cacheKeys,
+			CacheKeys:    s.cacheKeys,
 			DefaultCache: defaultCache,
 			LogLevel:     s.LogLevel,
 		}
@@ -141,14 +141,19 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 		}
 		return nil
 	}
-	if s.Configuration.cacheKeys == nil {
-		s.Configuration.cacheKeys = make(map[configurationtypes.RegValue]configurationtypes.Key)
+	if s.Configuration.CacheKeys == nil || len(s.Configuration.CacheKeys) == 0 {
+		s.Configuration.CacheKeys = configurationtypes.CacheKeys{}
 	}
 	if s.CacheKeys == nil {
 		s.CacheKeys = app.CacheKeys
 	}
-	for k, v := range s.CacheKeys {
-		s.Configuration.cacheKeys[configurationtypes.RegValue{Regexp: regexp.MustCompile(k)}] = v
+	for _, cacheKey := range s.Configuration.CacheKeys {
+		for k, v := range cacheKey {
+			s.Configuration.CacheKeys = append(
+				s.Configuration.CacheKeys,
+				map[configurationtypes.RegValue]configurationtypes.Key{k: v},
+			)
+		}
 	}
 
 	dc := s.Configuration.DefaultCache
@@ -174,7 +179,7 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 	if dc.Timeout.Cache.Duration == 0 {
 		s.Configuration.DefaultCache.Timeout.Cache = appDc.Timeout.Cache
 	}
-	if !dc.Key.DisableBody && !dc.Key.DisableHost && !dc.Key.DisableMethod && !dc.Key.Hide {
+	if !dc.Key.DisableBody && !dc.Key.DisableHost && !dc.Key.DisableMethod && !dc.Key.DisableQuery && !dc.Key.Hide && len(dc.Key.Headers) == 0 {
 		s.Configuration.DefaultCache.Key = appDc.Key
 	}
 	if dc.DefaultCacheControl == "" {
@@ -224,6 +229,14 @@ func (s *SouinCaddyMiddleware) Provision(ctx caddy.Context) error {
 		return err
 	}
 
+	/*
+		s.cacheKeys = s.Configuration.cacheKeys
+		for _, cacheKey := range s.Configuration.CacheKeys {
+			for k, v := range cacheKey {
+				s.cacheKeys = append(s.cacheKeys, map[configurationtypes.RegValue]configurationtypes.Key{k: v})
+			}
+		}
+	*/
 	bh := middleware.NewHTTPCacheHandler(s.Configuration)
 	surrogates, ok := up.LoadOrStore(surrogate_key, bh.SurrogateKeyStorer)
 	if ok {
@@ -266,6 +279,14 @@ func (s *SouinCaddyMiddleware) Provision(ctx caddy.Context) error {
 		}
 	}
 
+	// v, l := up.LoadOrStore(coalescing_key, s.Retriever.GetTransport().GetCoalescingLayerStorage())
+	//
+	// if l {
+	// 	s.logger.Sugar().Debug("Loaded coalescing layer from cache.")
+	// 	_ = s.Retriever.GetTransport().GetCoalescingLayerStorage().Destruct()
+	// 	s.Retriever.GetTransport().(*rfc.VaryTransport).CoalescingLayerStorage = v.(*types.CoalescingLayerStorage)
+	// }
+
 	if app.Storer == (storage.Storer)(nil) {
 		app.Storer = s.SouinBaseHandler.Storer
 	}
@@ -276,6 +297,8 @@ func (s *SouinCaddyMiddleware) Provision(ctx caddy.Context) error {
 		s.SouinBaseHandler.SurrogateKeyStorer = app.SurrogateStorage
 	}
 
+	// s.RequestCoalescing = coalescing.Initialize()
+	// s.MapHandler = api.GenerateHandlerMap(s.Configuration, s.Retriever.GetTransport())
 	return nil
 }
 
@@ -299,7 +322,7 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 
 	souinApp.DefaultCache = cfg.DefaultCache
 	souinApp.API = cfg.API
-	souinApp.CacheKeys = cfg.CfgCacheKeys
+	souinApp.CacheKeys = cfg.CacheKeys
 	souinApp.LogLevel = cfg.LogLevel
 
 	return httpcaddyfile.App{
@@ -318,8 +341,9 @@ func (s *SouinCaddyMiddleware) UnmarshalCaddyfile(h *caddyfile.Dispenser) error 
 	s.Configuration = &Configuration{
 		DefaultCache: &dc,
 	}
+	err := parseConfiguration(s.Configuration, h, false)
 
-	return parseConfiguration(s.Configuration, h, false)
+	return err
 }
 
 // Interface guards

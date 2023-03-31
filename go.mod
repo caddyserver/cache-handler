@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/buraksezer/olric v0.5.4
 	github.com/caddyserver/caddy/v2 v2.6.4
-	github.com/darkweak/souin v1.6.35
+	github.com/darkweak/souin v1.6.36
 	go.uber.org/zap v1.24.0
 )
 

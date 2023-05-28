@@ -108,7 +108,7 @@ Here are all the available options for the directive options
 ```
 @match path /path
 
-@match {
+handle @match {
     cache {
         cache_name ChangeName
         cache_keys {
@@ -200,7 +200,7 @@ badger-configuration.com {
                 ZSTDCompressionLevel <int>
                 VerifyValueChecksum <bool>
                 EncryptionKey <string>
-                EncryptionKey <Duration>
+                EncryptionKeyRotationDuration <Duration>
                 BypassLockGuard <bool>
                 ChecksumVerificationMode <int>
                 DetectConflicts <bool>

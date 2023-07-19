@@ -343,7 +343,7 @@ func (t *testErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Cache-Control", "must-revalidate")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hello must-revalidate!"))
+	_, _ = w.Write([]byte("Hello must-revalidate!"))
 }
 
 func TestMustRevalidate(t *testing.T) {
@@ -366,7 +366,9 @@ func TestMustRevalidate(t *testing.T) {
 	}`, "caddyfile")
 
 	errorHandler := testErrorHandler{}
-	go http.ListenAndServe(":9081", &errorHandler)
+	go func(teh *testErrorHandler) {
+		_ = http.ListenAndServe(":9081", teh)
+	}(&errorHandler)
 	time.Sleep(time.Second)
 	resp1, _ := tester.AssertGetResponse(`http://localhost:9080/cache-default`, http.StatusOK, "Hello must-revalidate!")
 	resp2, _ := tester.AssertGetResponse(`http://localhost:9080/cache-default`, http.StatusOK, "Hello must-revalidate!")

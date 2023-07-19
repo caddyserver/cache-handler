@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/buraksezer/olric v0.5.4
 	github.com/caddyserver/caddy/v2 v2.6.4
-	github.com/darkweak/souin v1.6.36
+	github.com/darkweak/souin v1.6.39
 	go.uber.org/zap v1.24.0
 )
 
@@ -102,7 +102,7 @@ require (
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.9.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pquerna/cachecontrol v0.1.0 // indirect
+	github.com/pquerna/cachecontrol v0.1.1-0.20230415224848-baaf0ee61529 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.41.0 // indirect

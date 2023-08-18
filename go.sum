@@ -656,8 +656,8 @@ github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7Do
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/darkweak/go-esi v0.0.5 h1:b9LHI8Tz46R+i6p8avKPHAIBRQUCZDebNmKm5w/Zrns=
 github.com/darkweak/go-esi v0.0.5/go.mod h1:koCJqwum1u6mslyZuq/Phm6hfG1K3ZK5Y7jrUBTH654=
-github.com/darkweak/souin v1.6.39 h1:uVO18+pvy5N8dJH+CCfuBD3gx7AXWaBv+RjC9ee1pCk=
-github.com/darkweak/souin v1.6.39/go.mod h1:7B7VqPbFrF7AWJDRP6FCbE+zGiRUUqHAmWOs3Q2n4hk=
+github.com/darkweak/souin v1.6.40 h1:sjn6jLQNmGnyTsnxtBDP4/6P6E6YeFjRxuiy8EO2Eyg=
+github.com/darkweak/souin v1.6.40/go.mod h1:7B7VqPbFrF7AWJDRP6FCbE+zGiRUUqHAmWOs3Q2n4hk=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

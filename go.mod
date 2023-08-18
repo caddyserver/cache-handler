@@ -1,11 +1,11 @@
 module github.com/caddyserver/cache-handler
 
-go 1.19
+go 1.20
 
 require (
 	github.com/buraksezer/olric v0.5.4
 	github.com/caddyserver/caddy/v2 v2.6.4
-	github.com/darkweak/souin v1.6.39
+	github.com/darkweak/souin v1.6.40
 	go.uber.org/zap v1.24.0
 )
 

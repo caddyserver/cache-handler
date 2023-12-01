@@ -3,7 +3,7 @@ package httpcache
 import (
 	"errors"
 
-	"github.com/caddyserver/caddy/v2"
+	caddy "github.com/caddyserver/caddy/v2"
 	"github.com/darkweak/souin/configurationtypes"
 	"github.com/darkweak/souin/pkg/storage"
 	"github.com/darkweak/souin/pkg/surrogate/providers"
@@ -11,9 +11,9 @@ import (
 
 // SouinApp contains the whole Souin necessary items
 type SouinApp struct {
-	*DefaultCache
+	DefaultCache
 	// The provider to use.
-	Storer storage.Storer
+	Storers []storage.Storer
 	// Surrogate storage to support th econfiguration reload without surrogate-key data loss.
 	SurrogateStorage providers.SurrogateInterface
 	// Cache-key tweaking.
@@ -28,16 +28,11 @@ func init() {
 	caddy.RegisterModule(SouinApp{})
 }
 
-// Provision implements caddy.Provisioner
-func (s *SouinApp) Provision(_ caddy.Context) error {
-	return nil
-}
-
 // Start will start the App
 func (s SouinApp) Start() error {
 	_, _ = up.Delete(stored_providers_key)
 	_, _ = up.LoadOrStore(stored_providers_key, newStorageProvider())
-	if s.DefaultCache != nil && s.DefaultCache.GetTTL() == 0 {
+	if s.DefaultCache.GetTTL() == 0 {
 		return errors.New("Invalid/Incomplete default cache declaration")
 	}
 	return nil
@@ -59,5 +54,4 @@ func (s SouinApp) CaddyModule() caddy.ModuleInfo {
 var (
 	_ caddy.App         = (*SouinApp)(nil)
 	_ caddy.Module      = (*SouinApp)(nil)
-	_ caddy.Provisioner = (*SouinApp)(nil)
 )

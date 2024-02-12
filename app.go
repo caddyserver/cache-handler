@@ -3,9 +3,9 @@ package httpcache
 import (
 	"errors"
 
-	caddy "github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2"
 	"github.com/darkweak/souin/configurationtypes"
-	"github.com/darkweak/souin/pkg/storage"
+	"github.com/darkweak/souin/pkg/storage/types"
 	"github.com/darkweak/souin/pkg/surrogate/providers"
 )
 
@@ -13,7 +13,7 @@ import (
 type SouinApp struct {
 	DefaultCache
 	// The provider to use.
-	Storers []storage.Storer
+	Storers []types.Storer
 	// Surrogate storage to support th econfiguration reload without surrogate-key data loss.
 	SurrogateStorage providers.SurrogateInterface
 	// Cache-key tweaking.

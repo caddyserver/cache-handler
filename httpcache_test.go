@@ -1,8 +1,11 @@
 package httpcache
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -289,6 +292,62 @@ func TestNotHandledRoute(t *testing.T) {
 	}
 }
 
+func TestMaxBodyByte(t *testing.T) {
+	tester := caddytest.NewTester(t)
+	tester.InitServer(`
+	{
+		admin localhost:2999
+		http_port 9080
+		https_port 9443
+		cache {
+			ttl 5s
+			max_cachable_body_bytes 30
+		}
+	}
+	localhost:9080 {
+		route /max-body-bytes-stored {
+			cache
+			respond "Hello, Max body bytes stored!"
+		}
+		route /max-body-bytes-not-stored {
+			cache
+			respond "Hello, Max body bytes not stored due to the response length!"
+		}
+	}`, "caddyfile")
+
+	respStored1, _ := tester.AssertGetResponse(`http://localhost:9080/max-body-bytes-stored`, 200, "Hello, Max body bytes stored!")
+	respStored2, _ := tester.AssertGetResponse(`http://localhost:9080/max-body-bytes-stored`, 200, "Hello, Max body bytes stored!")
+	if respStored1.Header.Get("Cache-Status") != "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-/max-body-bytes-stored" {
+		t.Errorf("unexpected Cache-Status header value %v", respStored1.Header.Get("Cache-Status"))
+	}
+	if respStored1.Header.Get("Age") != "" {
+		t.Errorf("unexpected Age header %v", respStored1.Header.Get("Age"))
+	}
+
+	if respStored2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/max-body-bytes-stored" {
+		t.Errorf("unexpected Cache-Status header value %v", respStored2.Header.Get("Cache-Status"))
+	}
+	if respStored2.Header.Get("Age") == "" {
+		t.Error("Age header should be present")
+	}
+
+	respNotStored1, _ := tester.AssertGetResponse(`http://localhost:9080/max-body-bytes-not-stored`, 200, "Hello, Max body bytes not stored due to the response length!")
+	respNotStored2, _ := tester.AssertGetResponse(`http://localhost:9080/max-body-bytes-not-stored`, 200, "Hello, Max body bytes not stored due to the response length!")
+	if respNotStored1.Header.Get("Cache-Status") != "Souin; fwd=uri-miss; detail=UPSTREAM-RESPONSE-TOO-LARGE; key=GET-http-localhost:9080-/max-body-bytes-not-stored" {
+		t.Errorf("unexpected Cache-Status header value %v", respNotStored1.Header.Get("Cache-Status"))
+	}
+	if respNotStored1.Header.Get("Age") != "" {
+		t.Errorf("unexpected Age header %v", respNotStored1.Header.Get("Age"))
+	}
+
+	if respNotStored2.Header.Get("Cache-Status") != "Souin; fwd=uri-miss; detail=UPSTREAM-RESPONSE-TOO-LARGE; key=GET-http-localhost:9080-/max-body-bytes-not-stored" {
+		t.Errorf("unexpected Cache-Status header value %v", respNotStored2.Header.Get("Cache-Status"))
+	}
+	if respNotStored2.Header.Get("Age") != "" {
+		t.Errorf("unexpected Age header %v", respNotStored2.Header.Get("Age"))
+	}
+}
+
 func TestAuthenticatedRoute(t *testing.T) {
 	tester := caddytest.NewTester(t)
 	tester.InitServer(`
@@ -515,4 +574,256 @@ func Test_ETags(t *testing.T) {
 	_, _ = tester.AssertResponse(staleReq, http.StatusNotModified, "")
 	staleReq.Header = http.Header{"If-None-Match": []string{"other"}}
 	_, _ = tester.AssertResponse(staleReq, http.StatusOK, "Hello etag!")
+}
+
+type testHugeMaxAgeHandler struct{}
+
+func (t *testHugeMaxAgeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "max-age=600")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("Hello, huge max age!"))
+}
+
+func TestHugeMaxAgeHandler(t *testing.T) {
+	tester := caddytest.NewTester(t)
+	tester.InitServer(`
+	{
+		admin localhost:2999
+		http_port     9080
+		https_port    9443
+		cache
+	}
+	localhost:9080 {
+		route /huge-max-age {
+			cache
+			reverse_proxy localhost:9083
+		}
+	}`, "caddyfile")
+
+	go func() {
+		hugeMaxAgeHandler := testHugeMaxAgeHandler{}
+		_ = http.ListenAndServe(":9083", &hugeMaxAgeHandler)
+	}()
+	time.Sleep(time.Second)
+
+	resp1, _ := tester.AssertGetResponse(`http://localhost:9080/huge-max-age`, 200, "Hello, huge max age!")
+	if resp1.Header.Get("Age") != "" {
+		t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+	}
+	if resp1.Header.Get("Cache-Status") != "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-/huge-max-age" {
+		t.Error("Cache-Status header should be present")
+	}
+
+	resp2, _ := tester.AssertGetResponse(`http://localhost:9080/huge-max-age`, 200, "Hello, huge max age!")
+	if resp2.Header.Get("Age") == "" {
+		t.Error("Age header should be present")
+	}
+	if resp2.Header.Get("Age") != "1" {
+		t.Error("Age header should be present")
+	}
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=599; key=GET-http-localhost:9080-/huge-max-age" {
+		t.Error("Cache-Status header should be present")
+	}
+
+	time.Sleep(2 * time.Second)
+	resp3, _ := tester.AssertGetResponse(`http://localhost:9080/huge-max-age`, 200, "Hello, huge max age!")
+	if resp3.Header.Get("Age") != "3" {
+		t.Error("Age header should be present")
+	}
+	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=597; key=GET-http-localhost:9080-/huge-max-age" {
+		t.Error("Cache-Status header should be present")
+	}
+}
+
+type testVaryHandler struct{}
+
+const variedHeader = "X-Varied"
+
+func (t *testVaryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(50 * time.Millisecond)
+	w.Header().Set("Vary", variedHeader)
+	w.Header().Set(variedHeader, r.Header.Get(variedHeader))
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(fmt.Sprintf("Hello, vary %s!", r.Header.Get(variedHeader))))
+}
+
+func TestVaryHandler(t *testing.T) {
+	tester := caddytest.NewTester(t)
+	tester.InitServer(`
+	{
+		admin localhost:2999
+		http_port     9080
+		https_port    9443
+		cache
+	}
+	localhost:9080 {
+		route /vary-multiple {
+			cache
+			reverse_proxy localhost:9084
+		}
+	}`, "caddyfile")
+
+	go func() {
+		varyHandler := testVaryHandler{}
+		_ = http.ListenAndServe(":9084", &varyHandler)
+	}()
+	time.Sleep(time.Second)
+
+	baseRq, _ := http.NewRequest(http.MethodGet, "http://localhost:9080/vary-multiple", nil)
+
+	rq1 := baseRq.Clone(context.Background())
+	rq1.Header.Set(variedHeader, "first")
+	rq2 := baseRq.Clone(context.Background())
+	rq2.Header.Set(variedHeader, "second")
+	rq3 := baseRq.Clone(context.Background())
+	rq3.Header.Set(variedHeader, "third")
+	rq4 := baseRq.Clone(context.Background())
+	rq4.Header.Set(variedHeader, "fourth")
+
+	requests := []*http.Request{
+		rq1,
+		rq2,
+		rq3,
+		rq4,
+	}
+
+	var wg sync.WaitGroup
+	resultMap := &sync.Map{}
+
+	for i, rq := range requests {
+		wg.Add(1)
+
+		go func(r *http.Request, iteration int) {
+			defer wg.Done()
+			res, _ := tester.AssertResponse(r, 200, fmt.Sprintf("Hello, vary %s!", r.Header.Get(variedHeader)))
+			resultMap.Store(iteration, res)
+		}(rq, i)
+	}
+
+	wg.Wait()
+
+	for i := 0; i < 4; i++ {
+		if res, ok := resultMap.Load(i); !ok {
+			t.Errorf("unexpected nil response for iteration %d", i)
+		} else {
+			rs, ok := res.(*http.Response)
+			if !ok {
+				t.Error("The object is not type of *http.Response")
+			}
+
+			if rs.Header.Get("Cache-Status") != "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-/vary-multiple" {
+				t.Errorf("The response %d doesn't match the expected header: %s", i, rs.Header.Get("Cache-Status"))
+			}
+		}
+	}
+
+	for i, rq := range requests {
+		wg.Add(1)
+
+		go func(r *http.Request, iteration int) {
+			defer wg.Done()
+			res, _ := tester.AssertResponse(r, 200, fmt.Sprintf("Hello, vary %s!", r.Header.Get(variedHeader)))
+			resultMap.Store(iteration, res)
+		}(rq, i)
+	}
+
+	wg.Wait()
+
+	checker := func(res any, ttl int) {
+		rs, ok := res.(*http.Response)
+		if !ok {
+			t.Error("The object is not type of *http.Response")
+		}
+
+		if rs.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-/vary-multiple", ttl) || rs.Header.Get("Age") != fmt.Sprint(120-ttl) {
+			t.Errorf("The response doesn't match the expected header or age: %s => %s", rs.Header.Get("Cache-Status"), rs.Header.Get("Age"))
+		}
+	}
+
+	if res, ok := resultMap.Load(0); !ok {
+		t.Errorf("unexpected nil response for iteration %d", 0)
+	} else {
+		checker(res, 119)
+	}
+
+	if res, ok := resultMap.Load(1); !ok {
+		t.Errorf("unexpected nil response for iteration %d", 1)
+	} else {
+		checker(res, 119)
+	}
+
+	if res, ok := resultMap.Load(2); !ok {
+		t.Errorf("unexpected nil response for iteration %d", 2)
+	} else {
+		checker(res, 119)
+	}
+
+	if res, ok := resultMap.Load(3); !ok {
+		t.Errorf("unexpected nil response for iteration %d", 3)
+	} else {
+		checker(res, 119)
+	}
+}
+
+func TestESITags(t *testing.T) {
+	tester := caddytest.NewTester(t)
+	tester.InitServer(`
+	{
+		admin localhost:2999
+		http_port     9080
+		https_port    9443
+		cache {
+			ttl 1000s
+		}
+	}
+	localhost:9080 {
+		route /esi-include-1 {
+			cache
+			respond "esi-include-1 with some long content to ensure the compute works well. Also add some dummy text with some $pecial characters without recursive esi includes"
+		}
+		route /esi-include-2 {
+			cache
+			respond "esi-include-2"
+		}
+		route /esi-path {
+			cache
+			header Cache-Control "max-age=60"
+			respond "Hello <esi:include src=\"http://localhost:9080/esi-include-1\"/> and <esi:include src=\"http://localhost:9080/esi-include-2\"/>!"
+		}
+	}`, "caddyfile")
+
+	resp1, _ := tester.AssertGetResponse(`http://localhost:9080/esi-path`, 200, "Hello esi-include-1 with some long content to ensure the compute works well. Also add some dummy text with some $pecial characters without recursive esi includes and esi-include-2!")
+	if resp1.Header.Get("Age") != "" {
+		t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+	}
+	if resp1.Header.Get("Cache-Status") != "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-/esi-path" {
+		t.Errorf("unexpected Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+	}
+	if resp1.Header.Get("Content-Length") != "180" {
+		t.Errorf("unexpected Content-Length header %v", resp1.Header.Get("Content-Length"))
+	}
+
+	resp2, _ := tester.AssertGetResponse(`http://localhost:9080/esi-path`, 200, "Hello esi-include-1 with some long content to ensure the compute works well. Also add some dummy text with some $pecial characters without recursive esi includes and esi-include-2!")
+	if resp2.Header.Get("Age") == "" {
+		t.Error("Age header should be present")
+	}
+	if resp2.Header.Get("Age") != "1" {
+		t.Error("Age header should be present")
+	}
+
+	resp3, _ := tester.AssertGetResponse(`http://localhost:9080/esi-include-1`, 200, "esi-include-1 with some long content to ensure the compute works well. Also add some dummy text with some $pecial characters without recursive esi includes")
+	if resp3.Header.Get("Age") == "" {
+		t.Error("Age header should be present")
+	}
+	if resp3.Header.Get("Cache-Status") == "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-/esi-include-1" {
+		t.Error("Cache-Status should be already stored")
+	}
+
+	resp4, _ := tester.AssertGetResponse(`http://localhost:9080/esi-include-2`, 200, "esi-include-2")
+	if resp4.Header.Get("Age") == "" {
+		t.Error("Age header should be present")
+	}
+	if resp4.Header.Get("Cache-Status") == "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-/esi-include-2" {
+		t.Error("Cache-Status should be already stored")
+	}
 }

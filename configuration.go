@@ -22,6 +22,8 @@ type DefaultCache struct {
 	CDN       configurationtypes.CDN `json:"cdn"`
 	// The default Cache-Control header value if none set by the upstream server.
 	DefaultCacheControl string `json:"default_cache_control"`
+	// The maximum body size (in bytes) to be stored into cache.
+	MaxBodyBytes uint64 `json:"max_cachable_body_bytes"`
 	// Redis provider configuration.
 	Distributed bool `json:"distributed"`
 	// Headers to add to the cache key if they are present.
@@ -140,6 +142,11 @@ func (d *DefaultCache) GetDefaultCacheControl() string {
 	return d.DefaultCacheControl
 }
 
+// GetMaxBodyBytes returns the maximum body size (in bytes) to be cached
+func (d *DefaultCache) GetMaxBodyBytes() uint64 {
+	return d.MaxBodyBytes
+}
+
 // Configuration holder
 type Configuration struct {
 	// Default cache to fallback on when none are redefined.
@@ -250,13 +257,19 @@ func parseBadgerConfiguration(c map[string]interface{}) map[string]interface{} {
 func parseRedisConfiguration(c map[string]interface{}) map[string]interface{} {
 	for k, v := range c {
 		switch k {
-		case "Network", "Addr", "Username", "Password":
+		case "InitAddress":
+			if s, ok := v.(string); ok {
+				c[k] = []string{s}
+			} else {
+				c[k] = v
+			}
+		case "Username", "Password", "ClientName", "ClientSetInfo", "ClientTrackingOptions":
 			c[k] = v
-		case "PoolFIFO":
+		case "SendToReplicas", "ShuffleInit", "ClientNoTouch", "DisableRetry", "DisableCache", "AlwaysPipelining", "AlwaysRESP2", "ForceSingleClient", "ReplicaOnly", "ClientNoEvict":
 			c[k] = true
-		case "DB", "MaxRetries", "PoolSize", "MinIdleConns", "MaxIdleConns":
+		case "SelectDB", "CacheSizeEachConn", "RingScaleEachConn", "ReadBufferEachConn", "WriteBufferEachConn", "BlockingPoolSize", "PipelineMultiplex":
 			c[k], _ = strconv.Atoi(v.(string))
-		case "MinRetryBackoff", "MaxRetryBackoff", "DialTimeout", "ReadTimeout", "WriteTimeout", "PoolTimeout", "ConnMaxIdleTime", "ConnMaxLifetime":
+		case "ConnWriteTimeout", "MaxFlushDelay":
 			c[k], _ = time.ParseDuration(v.(string))
 		}
 	}
@@ -264,7 +277,7 @@ func parseRedisConfiguration(c map[string]interface{}) map[string]interface{} {
 	return c
 }
 
-func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isBlocking bool) error {
+func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal bool) error {
 	for h.Next() {
 		for nesting := h.Nesting(); h.NextBlock(nesting); {
 			rootOption := h.Val()
@@ -274,6 +287,9 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isBlocking b
 				allowed = append(allowed, h.RemainingArgs()...)
 				cfg.DefaultCache.AllowedHTTPVerbs = allowed
 			case "api":
+				if !isGlobal {
+					return h.Err("'api' block must be global")
+				}
 				apiConfiguration := configurationtypes.API{}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
@@ -382,8 +398,10 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isBlocking b
 					case "api_key":
 						cdn.APIKey = h.RemainingArgs()[0]
 					case "dynamic":
-						if len(h.RemainingArgs()) > 0 {
-							cdn.Dynamic, _ = strconv.ParseBool(h.RemainingArgs()[0])
+						cdn.Dynamic = true
+						args := h.RemainingArgs()
+						if len(args) > 0 {
+							cdn.Dynamic, _ = strconv.ParseBool(args[0])
 						}
 					case "hostname":
 						cdn.Hostname = h.RemainingArgs()[0]
@@ -401,6 +419,14 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isBlocking b
 			case "default_cache_control":
 				args := h.RemainingArgs()
 				cfg.DefaultCache.DefaultCacheControl = strings.Join(args, " ")
+			case "max_cachable_body_bytes":
+				args := h.RemainingArgs()
+				maxBodyBytes, err := strconv.ParseUint(args[0], 10, 64)
+				if err != nil {
+					return h.Errf("unsupported max_cachable_body_bytes: %s", args)
+				} else {
+					cfg.DefaultCache.MaxBodyBytes = maxBodyBytes
+				}
 			case "etcd":
 				cfg.DefaultCache.Distributed = true
 				provider := configurationtypes.CacheProvider{}

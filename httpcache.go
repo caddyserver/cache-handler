@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/buraksezer/olric/config"
-	caddy "github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
@@ -14,6 +14,7 @@ import (
 	"github.com/darkweak/souin/configurationtypes"
 	"github.com/darkweak/souin/pkg/middleware"
 	"github.com/darkweak/souin/pkg/storage"
+	"github.com/darkweak/souin/pkg/storage/types"
 	surrogates_providers "github.com/darkweak/souin/pkg/surrogate/providers"
 	"go.uber.org/zap"
 )
@@ -178,6 +179,9 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 	if dc.Timeout.Backend.Duration == 0 {
 		s.Configuration.DefaultCache.Timeout.Backend = appDc.Timeout.Backend
 	}
+	if dc.Mode == "" {
+		s.Configuration.DefaultCache.Mode = appDc.Mode
+	}
 	if dc.Timeout.Cache.Duration == 0 {
 		s.Configuration.DefaultCache.Timeout.Cache = appDc.Timeout.Cache
 	}
@@ -186,6 +190,9 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 	}
 	if dc.DefaultCacheControl == "" {
 		s.Configuration.DefaultCache.DefaultCacheControl = appDc.DefaultCacheControl
+	}
+	if dc.MaxBodyBytes == 0 {
+		s.Configuration.DefaultCache.MaxBodyBytes = appDc.MaxBodyBytes
 	}
 	if dc.CacheName == "" {
 		s.Configuration.DefaultCache.CacheName = appDc.CacheName
@@ -265,7 +272,7 @@ func (s *SouinCaddyMiddleware) Provision(ctx caddy.Context) error {
 					})
 
 					if l && e == nil {
-						s.SouinBaseHandler.Storers = append(s.SouinBaseHandler.Storers, v.(storage.Storer))
+						s.SouinBaseHandler.Storers = append(s.SouinBaseHandler.Storers, v.(types.Storer))
 					}
 				} else {
 					s.logger.Sugar().Debug("Store the olric instance.")

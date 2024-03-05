@@ -317,29 +317,16 @@ redis-url.com {
     }
 }
 ```
+
+You can also use the configuration. Refer to the [rueidis client options](https://github.com/redis/rueidis/blob/main/rueidis.go#L56) to define your config as key value.
 ```
 redis-configuration.com {
     cache {
         redis {
             configuration {
-                Network my-network
-                Addr 127.0.0.1:6379
-                Username user
-                Password password
-                DB 1
-                MaxRetries 1
-                MinRetryBackoff 5s
-                MaxRetryBackoff 5s
-                DialTimeout 5s
-                ReadTimeout 5s
-                WriteTimeout 5s
-                PoolFIFO true
-                PoolSize 99999
-                PoolTimeout 10s
-                MinIdleConns 100
-                MaxIdleConns 100
-                ConnMaxIdleTime 5s
-                ConnMaxLifetime 5s
+                ClientName souin-redis
+                InitAddress 127.0.0.1:6379
+                SelectDB 0
             }
         }
     }

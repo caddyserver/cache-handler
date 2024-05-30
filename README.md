@@ -15,7 +15,6 @@ This is a distributed HTTP cache module for Caddy based on [Souin](https://githu
 Using the minimal configuration the responses will be cached for `120s`
 ```caddy
 {
-    order cache before rewrite
     cache
 }
 
@@ -29,7 +28,6 @@ example.com {
 Here are all the available options for the global options
 ```caddy
 {
-    order cache before rewrite
     log {
         level debug
     }
@@ -324,9 +322,24 @@ redis-configuration.com {
     cache {
         redis {
             configuration {
-                ClientName souin-redis
-                InitAddress 127.0.0.1:6379
-                SelectDB 0
+                Network my-network
+                Addr 127.0.0.1:6379
+                Username user
+                Password password
+                DB 1
+                MaxRetries 1
+                MinRetryBackoff 5s
+                MaxRetryBackoff 5s
+                DialTimeout 5s
+                ReadTimeout 5s
+                WriteTimeout 5s
+                PoolFIFO true
+                PoolSize 99999
+                PoolTimeout 10s
+                MinIdleConns 100
+                MaxIdleConns 100
+                ConnMaxIdleTime 5s
+                ConnMaxLifetime 5s
             }
         }
     }
@@ -370,8 +383,12 @@ What does these directives mean?
 | `key.disable_host`                        | Disable the host part in the key                                                                                                             | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.disable_method`                      | Disable the method part in the key                                                                                                           | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.disable_query`                       | Disable the query string part in the key                                                                                                     | `true`<br/><br/>`(default: false)`                                                                                      |
+| `key.disable_scheme`                      | Disable the scheme string part in the key                                                                                                    | `true`<br/><br/>`(default: false)`                                                                                      |
+| `key.hash`                                | Hash the key before store it in the storage to get smaller keys                                                                              | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.headers`                             | Add headers to the key matching the regexp                                                                                                   | `Authorization Content-Type X-Additional-Header`                                                                        |
 | `key.hide`                                | Prevent the key from being exposed in the `Cache-Status` HTTP response header                                                                | `true`<br/><br/>`(default: false)`                                                                                      |
+| `key.template`                            | Use caddy templates to create the key (when this option is enabled, disable_* directives are skipped)                                        | `KEY-{http.request.uri.path}-{http.request.uri.query}`                                                                  |
+| `max_cacheable_body_bytes`                | Set the maximum size (in bytes) for a response body to be cached (unlimited if omited)                                                       | `1048576` (1MB)                                                                                                         |
 | `mode`                                    | Bypass the RFC respect                                                                                                                       | One of `bypass` `bypass_request` `bypass_response` `strict` (default `strict`)                                          |
 | `nuts`                                    | Configure the Nuts cache storage                                                                                                             |                                                                                                                         |
 | `nuts.path`                               | Set the Nuts file path storage                                                                                                               | `/anywhere/nuts/storage`                                                                                                |
@@ -381,11 +398,15 @@ What does these directives mean?
 | `olric`                                   | Configure the Olric cache storage                                                                                                            |                                                                                                                         |
 | `olric.path`                              | Configure Olric with a file                                                                                                                  | `/anywhere/olric_configuration.json`                                                                                    |
 | `olric.configuration`                     | Configure Olric directly in the Caddyfile or your JSON caddy configuration                                                                   | [See the Olric configuration for the options](https://github.com/buraksezer/olric/blob/master/cmd/olricd/olricd.yaml/)  |
+| `otter`                                   | Configure the Otter cache storage                                                                                                            |                                                                                                                         |
+| `otter.configuration`                     | Configure Otter directly in the Caddyfile or your JSON caddy configuration                                                                   |                                                                                                                         |
+| `otter.configuration.size`                | Set the size of the pool in Otter                                                                                                            | `999999` (default `10000`)                                                                                              |
 | `redis`                                   | Configure the Redis cache storage                                                                                                            |                                                                                                                         |
 | `redis.url`                               | Set the Redis url storage                                                                                                                    | `localhost:6379`                                                                                                        |
 | `redis.configuration`                     | Configure Redis directly in the Caddyfile or your JSON caddy configuration                                                                   | [See the Nuts configuration for the options](https://github.com/nutsdb/nutsdb#default-options)                          |
 | `regex.exclude`                           | The regex used to prevent paths being cached                                                                                                 | `^[A-z]+.*$`                                                                                                            |
 | `stale`                                   | The stale duration                                                                                                                           | `25m`                                                                                                                   |
+| `storers`                                 | Storers chain to fallback if a previous one is unreachable or don't have the resource                                                        | `otter nuts badger redis`                                                                                               |
 | `timeout`                                 | The timeout configuration                                                                                                                    |                                                                                                                         |
 | `timeout.backend`                         | The timeout duration to consider the backend as unreachable                                                                                  | `10s`                                                                                                                   |
 | `timeout.cache`                           | The timeout duration to consider the cache provider as unreachable                                                                           | `10ms`                                                                                                                  |

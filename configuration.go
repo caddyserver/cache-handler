@@ -23,7 +23,7 @@ type DefaultCache struct {
 	// The default Cache-Control header value if none set by the upstream server.
 	DefaultCacheControl string `json:"default_cache_control"`
 	// The maximum body size (in bytes) to be stored into cache.
-	MaxBodyBytes uint64 `json:"max_cachable_body_bytes"`
+	MaxBodyBytes uint64 `json:"max_cacheable_body_bytes"`
 	// Redis provider configuration.
 	Distributed bool `json:"distributed"`
 	// Headers to add to the cache key if they are present.
@@ -40,6 +40,8 @@ type DefaultCache struct {
 	Etcd configurationtypes.CacheProvider `json:"etcd"`
 	// NutsDB provider configuration.
 	Nuts configurationtypes.CacheProvider `json:"nuts"`
+	// Otter provider configuration.
+	Otter configurationtypes.CacheProvider `json:"otter"`
 	// Regex to exclude cache.
 	Regex configurationtypes.Regex `json:"regex"`
 	// Storage providers chaining and order.
@@ -100,6 +102,11 @@ func (d *DefaultCache) GetMode() string {
 // GetNuts returns nuts configuration
 func (d *DefaultCache) GetNuts() configurationtypes.CacheProvider {
 	return d.Nuts
+}
+
+// GetOtter returns otter configuration
+func (d *DefaultCache) GetOtter() configurationtypes.CacheProvider {
+	return d.Otter
 }
 
 // GetOlric returns olric configuration
@@ -167,6 +174,11 @@ type Configuration struct {
 // GetUrls get the urls list in the configuration
 func (c *Configuration) GetUrls() map[string]configurationtypes.URL {
 	return c.URLs
+}
+
+// GetDefaultCache get the default cache
+func (c *Configuration) GetPluginName() string {
+	return "caddy"
 }
 
 // GetDefaultCache get the default cache
@@ -373,6 +385,12 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 							ck.DisableMethod = true
 						case "disable_query":
 							ck.DisableQuery = true
+						case "disable_scheme":
+							ck.DisableScheme = true
+						case "template":
+							ck.Template = h.RemainingArgs()[0]
+						case "hash":
+							ck.Hash = true
 						case "hide":
 							ck.Hide = true
 						case "headers":
@@ -419,11 +437,11 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 			case "default_cache_control":
 				args := h.RemainingArgs()
 				cfg.DefaultCache.DefaultCacheControl = strings.Join(args, " ")
-			case "max_cachable_body_bytes":
+			case "max_cacheable_body_bytes":
 				args := h.RemainingArgs()
 				maxBodyBytes, err := strconv.ParseUint(args[0], 10, 64)
 				if err != nil {
-					return h.Errf("unsupported max_cachable_body_bytes: %s", args)
+					return h.Errf("unsupported max_cacheable_body_bytes: %s", args)
 				} else {
 					cfg.DefaultCache.MaxBodyBytes = maxBodyBytes
 				}
@@ -455,6 +473,12 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 						config_key.DisableMethod = true
 					case "disable_query":
 						config_key.DisableQuery = true
+					case "disable_scheme":
+						config_key.DisableScheme = true
+					case "template":
+						config_key.Template = h.RemainingArgs()[0]
+					case "hash":
+						config_key.Hash = true
 					case "hide":
 						config_key.Hide = true
 					case "headers":
@@ -491,6 +515,18 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 					}
 				}
 				cfg.DefaultCache.Nuts = provider
+			case "otter":
+				provider := configurationtypes.CacheProvider{}
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					directive := h.Val()
+					switch directive {
+					case "configuration":
+						provider.Configuration = parseCaddyfileRecursively(h)
+					default:
+						return h.Errf("unsupported otter directive: %s", directive)
+					}
+				}
+				cfg.DefaultCache.Otter = provider
 			case "olric":
 				cfg.DefaultCache.Distributed = true
 				provider := configurationtypes.CacheProvider{}

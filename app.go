@@ -52,6 +52,6 @@ func (s SouinApp) CaddyModule() caddy.ModuleInfo {
 }
 
 var (
-	_ caddy.App         = (*SouinApp)(nil)
-	_ caddy.Module      = (*SouinApp)(nil)
+	_ caddy.App    = (*SouinApp)(nil)
+	_ caddy.Module = (*SouinApp)(nil)
 )

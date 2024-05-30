@@ -17,7 +17,6 @@ func TestMinimal(t *testing.T) {
 	tester.InitServer(`
 	{
 		admin localhost:2999
-		order cache before rewrite
 		http_port     9080
 		https_port    9443
 		cache
@@ -51,7 +50,6 @@ func TestHead(t *testing.T) {
 	tester.InitServer(`
 	{
 		admin localhost:2999
-		order cache before rewrite
 		http_port     9080
 		https_port    9443
 		cache
@@ -86,7 +84,6 @@ func TestQueryString(t *testing.T) {
 	tester.InitServer(`
 	{
 		admin localhost:2999
-		order cache before rewrite
 		http_port     9080
 		https_port    9443
 		cache {
@@ -117,7 +114,6 @@ func TestMaxAge(t *testing.T) {
 	tester.InitServer(`
 	{
 		admin localhost:2999
-		order cache before rewrite
 		http_port     9080
 		https_port    9443
 		cache
@@ -152,7 +148,6 @@ func TestMaxStale(t *testing.T) {
 	tester.InitServer(`
 	{
 		admin localhost:2999
-		order cache before rewrite
 		http_port     9080
 		https_port    9443
 		cache {
@@ -263,6 +258,88 @@ func TestAgeHeader(t *testing.T) {
 	}
 }
 
+func TestKeyGeneration(t *testing.T) {
+	tester := caddytest.NewTester(t)
+	tester.InitServer(`
+	{
+		admin localhost:2999
+		http_port     9080
+		https_port    9443
+		cache {
+			ttl 1000s
+		}
+	}
+	localhost:9080 {
+		route /key-template-route {
+			cache {
+				key {
+					template {method}-{host}-{path}-WITH_SUFFIX
+				}
+			}
+			respond "Hello, template route!"
+		}
+		route /key-headers-route {
+			cache {
+				key {
+					headers X-Header X-Internal
+				}
+			}
+			respond "Hello, headers route!"
+		}
+		route /key-hash-route {
+			cache {
+				key {
+					hash
+				}
+			}
+			respond "Hello, hash route!"
+		}
+	}`, "caddyfile")
+
+	resp1, _ := tester.AssertGetResponse(`http://localhost:9080/key-template-route`, 200, "Hello, template route!")
+	if resp1.Header.Get("Age") != "" {
+		t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+	}
+	if !strings.Contains(resp1.Header.Get("Cache-Status"), "key=GET-localhost-/key-template-route-WITH_SUFFIX") {
+		t.Errorf("unexpected Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+	}
+
+	resp2, _ := tester.AssertGetResponse(`http://localhost:9080/key-template-route`, 200, "Hello, template route!")
+	if resp2.Header.Get("Age") == "" {
+		t.Error("Age header should be present")
+	}
+	if resp2.Header.Get("Age") != "1" {
+		t.Error("Age header should be present")
+	}
+	if !strings.Contains(resp2.Header.Get("Cache-Status"), "key=GET-localhost-/key-template-route-WITH_SUFFIX") {
+		t.Errorf("unexpected Cache-Status header %v", resp2.Header.Get("Cache-Status"))
+	}
+
+	rq, _ := http.NewRequest(http.MethodGet, "http://localhost:9080/key-headers-route", nil)
+	rq.Header = http.Header{
+		"X-Internal": []string{"my-value"},
+	}
+	resp1, _ = tester.AssertResponse(rq, 200, "Hello, headers route!")
+	if resp1.Header.Get("Age") != "" {
+		t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+	}
+	if !strings.Contains(resp1.Header.Get("Cache-Status"), "key=GET-http-localhost:9080-/key-headers-route--my-value") {
+		t.Errorf("unexpected Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+	}
+
+	rq.Header = http.Header{
+		"X-Header":   []string{"first"},
+		"X-Internal": []string{"my-value"},
+	}
+	resp1, _ = tester.AssertResponse(rq, 200, "Hello, headers route!")
+	if resp1.Header.Get("Age") != "" {
+		t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+	}
+	if !strings.Contains(resp1.Header.Get("Cache-Status"), "key=GET-http-localhost:9080-/key-headers-route-first-my-value") {
+		t.Errorf("unexpected Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+	}
+}
+
 func TestNotHandledRoute(t *testing.T) {
 	tester := caddytest.NewTester(t)
 	tester.InitServer(`
@@ -301,7 +378,7 @@ func TestMaxBodyByte(t *testing.T) {
 		https_port 9443
 		cache {
 			ttl 5s
-			max_cachable_body_bytes 30
+			max_cacheable_body_bytes 30
 		}
 	}
 	localhost:9080 {
@@ -446,7 +523,6 @@ func TestMustRevalidate(t *testing.T) {
 	tester.InitServer(`
 	{
 		admin localhost:2999
-		order cache before rewrite
 		http_port     9080
 		cache {
 			ttl 5s
@@ -546,7 +622,6 @@ func Test_ETags(t *testing.T) {
 	tester.InitServer(`
 	{
 		admin localhost:2999
-		order cache before rewrite
 		http_port     9080
 		cache {
 			ttl 50s
@@ -826,4 +901,74 @@ func TestESITags(t *testing.T) {
 	if resp4.Header.Get("Cache-Status") == "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-/esi-include-2" {
 		t.Error("Cache-Status should be already stored")
 	}
+}
+
+func TestCacheableStatusCode(t *testing.T) {
+	caddyTester := caddytest.NewTester(t)
+	caddyTester.InitServer(`
+	{
+		admin localhost:2999
+		http_port     9080
+		https_port    9443
+		cache {
+			ttl 10s
+		}
+	}
+	localhost:9080 {
+		cache
+
+		respond /cache-200 "" 200 {
+			close
+		}
+		respond /cache-204 "" 204 {
+			close
+		}
+		respond /cache-301 "" 301 {
+			close
+		}
+		respond /cache-405 "" 405 {
+			close
+		}
+	}`, "caddyfile")
+
+	cacheChecker := func(tester *caddytest.Tester, path string, expectedStatusCode int, expectedCached bool) {
+		resp1, _ := tester.AssertGetResponse("http://localhost:9080"+path, expectedStatusCode, "")
+		if resp1.Header.Get("Age") != "" {
+			t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+		}
+
+		cacheStatus := "Souin; fwd=uri-miss; "
+		if expectedCached {
+			cacheStatus += "stored; "
+		} else {
+			cacheStatus += "detail=UPSTREAM-ERROR-OR-EMPTY-RESPONSE; "
+		}
+		cacheStatus += "key=GET-http-localhost:9080-" + path
+
+		if resp1.Header.Get("Cache-Status") != cacheStatus {
+			t.Errorf("unexpected first Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+		}
+
+		resp1, _ = tester.AssertGetResponse("http://localhost:9080"+path, expectedStatusCode, "")
+
+		cacheStatus = "Souin; "
+		if expectedCached {
+			if resp1.Header.Get("Age") != "1" {
+				t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+			}
+			cacheStatus += "hit; ttl=9; "
+		} else {
+			cacheStatus += "fwd=uri-miss; detail=UPSTREAM-ERROR-OR-EMPTY-RESPONSE; "
+		}
+		cacheStatus += "key=GET-http-localhost:9080-" + path
+
+		if resp1.Header.Get("Cache-Status") != cacheStatus {
+			t.Errorf("unexpected second Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+		}
+	}
+
+	cacheChecker(caddyTester, "/cache-200", 200, false)
+	cacheChecker(caddyTester, "/cache-204", 204, true)
+	cacheChecker(caddyTester, "/cache-301", 301, true)
+	cacheChecker(caddyTester, "/cache-405", 405, true)
 }

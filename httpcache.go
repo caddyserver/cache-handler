@@ -27,6 +27,7 @@ func init() {
 	caddy.RegisterModule(SouinCaddyMiddleware{})
 	httpcaddyfile.RegisterGlobalOption(moduleName, parseCaddyfileGlobalOption)
 	httpcaddyfile.RegisterHandlerDirective(moduleName, parseCaddyfileHandlerDirective)
+	httpcaddyfile.RegisterDirectiveOrder(moduleName, httpcaddyfile.Before, "rewrite")
 }
 
 // SouinCaddyMiddleware allows the user to set up an HTTP cache system,
@@ -49,8 +50,10 @@ type SouinCaddyMiddleware struct {
 	Key configurationtypes.Key `json:"key,omitempty"`
 	// Override the cache key generation matching the pattern.
 	CacheKeys configurationtypes.CacheKeys `json:"cache_keys,omitempty"`
-	// Configure the Badger cache storage.
+	// Configure the Nuts cache storage.
 	Nuts configurationtypes.CacheProvider `json:"nuts,omitempty"`
+	// Configure the Otter cache storage.
+	Otter configurationtypes.CacheProvider `json:"otter,omitempty"`
 	// Enable the Etcd distributed cache storage.
 	Etcd configurationtypes.CacheProvider `json:"etcd,omitempty"`
 	// Enable the Redis distributed cache storage.
@@ -91,6 +94,7 @@ func (s *SouinCaddyMiddleware) configurationPropertyMapper() error {
 		defaultCache := DefaultCache{
 			Badger:              s.Badger,
 			Nuts:                s.Nuts,
+			Otter:               s.Otter,
 			Key:                 s.Key,
 			DefaultCacheControl: s.DefaultCacheControl,
 			CacheName:           s.CacheName,
@@ -185,7 +189,7 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 	if dc.Timeout.Cache.Duration == 0 {
 		s.Configuration.DefaultCache.Timeout.Cache = appDc.Timeout.Cache
 	}
-	if !dc.Key.DisableBody && !dc.Key.DisableHost && !dc.Key.DisableMethod && !dc.Key.DisableQuery && !dc.Key.Hide && len(dc.Key.Headers) == 0 {
+	if !dc.Key.DisableBody && !dc.Key.DisableHost && !dc.Key.DisableMethod && !dc.Key.DisableQuery && !dc.Key.DisableScheme && !dc.Key.Hash && !dc.Key.Hide && len(dc.Key.Headers) == 0 && dc.Key.Template == "" {
 		s.Configuration.DefaultCache.Key = appDc.Key
 	}
 	if dc.DefaultCacheControl == "" {
@@ -214,6 +218,9 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 	}
 	if dc.Nuts.Path == "" && dc.Nuts.Configuration == nil {
 		s.Configuration.DefaultCache.Nuts = appDc.Nuts
+	}
+	if dc.Otter.Configuration == nil {
+		s.Configuration.DefaultCache.Otter = appDc.Otter
 	}
 	if dc.Regex.Exclude == "" {
 		s.Configuration.DefaultCache.Regex.Exclude = appDc.Regex.Exclude

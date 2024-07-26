@@ -406,3 +406,7 @@ Other resources
 ---------------
 You can find an example for the [Caddyfile](Caddyfile) or the [JSON file](configuration.json).  
 See the [Souin](https://github.com/darkweak/souin) configuration for the full configuration, and its associated [Caddyfile](https://github.com/darkweak/souin/blob/master/plugins/caddy/Caddyfile)  
+
+### Development and Stable Versions
+
+The **Souin** repository serves as the development version, where new features are introduced and tested. Once these features have been thoroughly stabilized, they are integrated into the **cache-handler** repository through a dependency update. This ensures that **cache-handler** remains the stable and reliable version for production use.

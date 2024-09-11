@@ -34,13 +34,13 @@ func TestMinimal(t *testing.T) {
 	}
 
 	resp2, _ := tester.AssertGetResponse(`http://localhost:9080/cache-default`, 200, "Hello, default!")
-	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=119; key=GET-http-localhost:9080-/cache-default" {
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=119; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", resp2.Header.Get("Cache-Status"))
 	}
 
 	time.Sleep(2 * time.Second)
 	resp3, _ := tester.AssertGetResponse(`http://localhost:9080/cache-default`, 200, "Hello, default!")
-	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=117; key=GET-http-localhost:9080-/cache-default" {
+	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=117; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", resp3.Header.Get("Cache-Status"))
 	}
 }
@@ -71,7 +71,7 @@ func TestHead(t *testing.T) {
 	}
 
 	resp2, _ := tester.AssertResponse(headReq, 200, "")
-	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=119; key=HEAD-http-localhost:9080-/cache-head" {
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=119; key=HEAD-http-localhost:9080-/cache-head; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", resp2.Header)
 	}
 	if resp2.Header.Get("Content-Length") != "12" {
@@ -132,13 +132,13 @@ func TestMaxAge(t *testing.T) {
 	}
 
 	resp2, _ := tester.AssertGetResponse(`http://localhost:9080/cache-max-age`, 200, "Hello, max-age!")
-	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=59; key=GET-http-localhost:9080-/cache-max-age" {
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=59; key=GET-http-localhost:9080-/cache-max-age; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", resp2.Header.Get("Cache-Status"))
 	}
 
 	time.Sleep(2 * time.Second)
 	resp3, _ := tester.AssertGetResponse(`http://localhost:9080/cache-max-age`, 200, "Hello, max-age!")
-	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=57; key=GET-http-localhost:9080-/cache-max-age" {
+	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=57; key=GET-http-localhost:9080-/cache-max-age; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", resp3.Header.Get("Cache-Status"))
 	}
 }
@@ -170,7 +170,7 @@ func TestMaxStale(t *testing.T) {
 	}
 
 	resp2, _ := tester.AssertGetResponse(maxStaleURL, 200, "Hello, max-stale!")
-	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=2; key=GET-http-localhost:9080-/cache-max-stale" {
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=2; key=GET-http-localhost:9080-/cache-max-stale; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", resp2.Header.Get("Cache-Status"))
 	}
 
@@ -178,7 +178,7 @@ func TestMaxStale(t *testing.T) {
 	reqMaxStale, _ := http.NewRequest(http.MethodGet, maxStaleURL, nil)
 	reqMaxStale.Header = http.Header{"Cache-Control": []string{"max-stale=3"}}
 	resp3, _ := tester.AssertResponse(reqMaxStale, 200, "Hello, max-stale!")
-	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=-1; key=GET-http-localhost:9080-/cache-max-stale; fwd=stale" {
+	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=-1; key=GET-http-localhost:9080-/cache-max-stale; detail=DEFAULT; fwd=stale" {
 		t.Errorf("unexpected Cache-Status header %v", resp3.Header.Get("Cache-Status"))
 	}
 
@@ -214,7 +214,7 @@ func TestSMaxAge(t *testing.T) {
 	}
 
 	resp2, _ := tester.AssertGetResponse(`http://localhost:9080/cache-s-maxage`, 200, "Hello, s-maxage!")
-	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/cache-s-maxage" {
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/cache-s-maxage; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header with %v", resp2.Header.Get("Cache-Status"))
 	}
 }
@@ -401,7 +401,7 @@ func TestMaxBodyByte(t *testing.T) {
 		t.Errorf("unexpected Age header %v", respStored1.Header.Get("Age"))
 	}
 
-	if respStored2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/max-body-bytes-stored" {
+	if respStored2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/max-body-bytes-stored; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header value %v", respStored2.Header.Get("Cache-Status"))
 	}
 	if respStored2.Header.Get("Age") == "" {
@@ -479,7 +479,7 @@ func TestAuthenticatedRoute(t *testing.T) {
 		t.Errorf("unexpected Cache-Status header %v", respAuthBypassAlice1.Header.Get("Cache-Status"))
 	}
 	respAuthBypassAlice2, _ := tester.AssertResponse(getRequestFor("/auth-bypass", "Alice"), 200, "Hello, auth bypass Bearer Alice!")
-	if respAuthBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-Bearer Alice-text/plain" {
+	if respAuthBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-Bearer Alice-text/plain; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", respAuthBypassAlice2.Header.Get("Cache-Status"))
 	}
 
@@ -488,7 +488,7 @@ func TestAuthenticatedRoute(t *testing.T) {
 		t.Errorf("unexpected Cache-Status header %v", respAuthBypassBob1.Header.Get("Cache-Status"))
 	}
 	respAuthBypassBob2, _ := tester.AssertResponse(getRequestFor("/auth-bypass", "Bob"), 200, "Hello, auth bypass Bearer Bob!")
-	if respAuthBypassBob2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-Bearer Bob-text/plain" {
+	if respAuthBypassBob2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-Bearer Bob-text/plain; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", respAuthBypassBob2.Header.Get("Cache-Status"))
 	}
 
@@ -497,7 +497,7 @@ func TestAuthenticatedRoute(t *testing.T) {
 		t.Errorf("unexpected Cache-Status header %v", respAuthVaryBypassAlice1.Header.Get("Cache-Status"))
 	}
 	respAuthVaryBypassAlice2, _ := tester.AssertResponse(getRequestFor("/auth-bypass-vary", "Alice"), 200, "Hello, auth vary bypass Bearer Alice!")
-	if respAuthVaryBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-vary-Bearer Alice-text/plain" {
+	if respAuthVaryBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-vary-Bearer Alice-text/plain; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", respAuthVaryBypassAlice2.Header.Get("Cache-Status"))
 	}
 }
@@ -536,10 +536,10 @@ func TestMustRevalidate(t *testing.T) {
 		}
 	}`, "caddyfile")
 
-	errorHandler := testErrorHandler{}
-	go func(teh *testErrorHandler) {
-		_ = http.ListenAndServe(":9081", teh)
-	}(&errorHandler)
+	go func() {
+		errorHandler := testErrorHandler{}
+		_ = http.ListenAndServe(":9081", &errorHandler)
+	}()
 	time.Sleep(time.Second)
 	resp1, _ := tester.AssertGetResponse(`http://localhost:9080/cache-default`, http.StatusOK, "Hello must-revalidate!")
 	resp2, _ := tester.AssertGetResponse(`http://localhost:9080/cache-default`, http.StatusOK, "Hello must-revalidate!")
@@ -561,7 +561,7 @@ func TestMustRevalidate(t *testing.T) {
 	if resp2.Header.Get("Cache-Control") != "must-revalidate" {
 		t.Errorf("unexpected resp2 Cache-Control header %v", resp2.Header.Get("Cache-Control"))
 	}
-	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/cache-default" {
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT" {
 		t.Errorf("unexpected resp2 Cache-Status header %v", resp2.Header.Get("Cache-Status"))
 	}
 	if resp2.Header.Get("Age") != "1" {
@@ -571,7 +571,7 @@ func TestMustRevalidate(t *testing.T) {
 	if resp3.Header.Get("Cache-Control") != "must-revalidate" {
 		t.Errorf("unexpected resp3 Cache-Control header %v", resp3.Header.Get("Cache-Control"))
 	}
-	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=-2; key=GET-http-localhost:9080-/cache-default; fwd=stale; fwd-status=500" {
+	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=-2; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT; fwd=stale; fwd-status=500" {
 		t.Errorf("unexpected resp3 Cache-Status header %v", resp3.Header.Get("Cache-Status"))
 	}
 	if resp3.Header.Get("Age") != "7" {
@@ -635,10 +635,10 @@ func Test_ETags(t *testing.T) {
 		}
 	}`, "caddyfile")
 
-	etagsHandler := testETagsHandler{}
-	go func(eh *testETagsHandler) {
-		_ = http.ListenAndServe(":9082", eh)
-	}(&etagsHandler)
+	go func() {
+		etagsHandler := testETagsHandler{}
+		_ = http.ListenAndServe(":9082", &etagsHandler)
+	}()
 	_, _ = tester.AssertGetResponse(`http://localhost:9080/etags`, http.StatusOK, "Hello etag!")
 	staleReq, _ := http.NewRequest(http.MethodGet, "http://localhost:9080/etags", nil)
 	staleReq.Header = http.Header{"If-None-Match": []string{etagValue}}
@@ -696,7 +696,7 @@ func TestHugeMaxAgeHandler(t *testing.T) {
 	if resp2.Header.Get("Age") != "1" {
 		t.Error("Age header should be present")
 	}
-	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=599; key=GET-http-localhost:9080-/huge-max-age" {
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=599; key=GET-http-localhost:9080-/huge-max-age; detail=DEFAULT" {
 		t.Error("Cache-Status header should be present")
 	}
 
@@ -705,7 +705,7 @@ func TestHugeMaxAgeHandler(t *testing.T) {
 	if resp3.Header.Get("Age") != "3" {
 		t.Error("Age header should be present")
 	}
-	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=597; key=GET-http-localhost:9080-/huge-max-age" {
+	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=597; key=GET-http-localhost:9080-/huge-max-age; detail=DEFAULT" {
 		t.Error("Cache-Status header should be present")
 	}
 }
@@ -810,7 +810,9 @@ func TestVaryHandler(t *testing.T) {
 			t.Error("The object is not type of *http.Response")
 		}
 
-		if rs.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-/vary-multiple", ttl) || rs.Header.Get("Age") != fmt.Sprint(120-ttl) {
+		nextTTL := ttl - 1
+		if (rs.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-/vary-multiple; detail=DEFAULT", ttl) || rs.Header.Get("Age") != fmt.Sprint(120-ttl)) &&
+			(rs.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-/vary-multiple; detail=DEFAULT", nextTTL) || rs.Header.Get("Age") != fmt.Sprint(120-nextTTL)) {
 			t.Errorf("The response doesn't match the expected header or age: %s => %s", rs.Header.Get("Cache-Status"), rs.Header.Get("Age"))
 		}
 	}
@@ -952,15 +954,17 @@ func TestCacheableStatusCode(t *testing.T) {
 		resp1, _ = tester.AssertGetResponse("http://localhost:9080"+path, expectedStatusCode, "")
 
 		cacheStatus = "Souin; "
+		detail := ""
 		if expectedCached {
 			if resp1.Header.Get("Age") != "1" {
 				t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
 			}
 			cacheStatus += "hit; ttl=9; "
+			detail = "; detail=DEFAULT"
 		} else {
 			cacheStatus += "fwd=uri-miss; detail=UPSTREAM-ERROR-OR-EMPTY-RESPONSE; "
 		}
-		cacheStatus += "key=GET-http-localhost:9080-" + path
+		cacheStatus += "key=GET-http-localhost:9080-" + path + detail
 
 		if resp1.Header.Get("Cache-Status") != cacheStatus {
 			t.Errorf("unexpected second Cache-Status header %v", resp1.Header.Get("Cache-Status"))
@@ -971,4 +975,114 @@ func TestCacheableStatusCode(t *testing.T) {
 	cacheChecker(caddyTester, "/cache-204", 204, true)
 	cacheChecker(caddyTester, "/cache-301", 301, true)
 	cacheChecker(caddyTester, "/cache-405", 405, true)
+}
+
+func TestExpires(t *testing.T) {
+	expiresValue := time.Now().Add(time.Hour * 24)
+	caddyTester := caddytest.NewTester(t)
+	caddyTester.InitServer(fmt.Sprintf(`
+	{
+		admin localhost:2999
+		http_port     9080
+		https_port    9443
+		cache {
+			ttl 10s
+		}
+	}
+	localhost:9080 {
+		route /expires-only {
+			cache
+			header Expires "%[1]s"
+			respond "Hello, expires-only!"
+		}
+		route /expires-with-max-age {
+			cache
+			header Expires "%[1]s"
+			header Cache-Control "max-age=60"
+			respond "Hello, expires-with-max-age!"
+		}
+		route /expires-with-s-maxage {
+			cache
+			header Expires "%[1]s"
+			header Cache-Control "s-maxage=5"
+			respond "Hello, expires-with-s-maxage!"
+		}
+	}`, expiresValue.Format(time.RFC1123)), "caddyfile")
+
+	cacheChecker := func(tester *caddytest.Tester, path string, expectedBody string, expectedDuration int) {
+		resp1, _ := tester.AssertGetResponse("http://localhost:9080"+path, 200, expectedBody)
+		if resp1.Header.Get("Age") != "" {
+			t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+		}
+
+		if resp1.Header.Get("Cache-Status") != "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-"+path {
+			t.Errorf("unexpected first Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+		}
+
+		resp1, _ = tester.AssertGetResponse("http://localhost:9080"+path, 200, expectedBody)
+
+		if resp1.Header.Get("Age") != "1" {
+			t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+		}
+
+		if resp1.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-%s; detail=DEFAULT", expectedDuration, path) {
+			t.Errorf(
+				"unexpected second Cache-Status header %v, expected %s",
+				resp1.Header.Get("Cache-Status"),
+				fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-%s; detail=DEFAULT", expectedDuration, path),
+			)
+		}
+	}
+
+	cacheChecker(caddyTester, "/expires-only", "Hello, expires-only!", int(time.Until(expiresValue).Seconds())-1)
+	cacheChecker(caddyTester, "/expires-with-max-age", "Hello, expires-with-max-age!", 59)
+	cacheChecker(caddyTester, "/expires-with-s-maxage", "Hello, expires-with-s-maxage!", 4)
+}
+
+func TestComplexQuery(t *testing.T) {
+	caddyTester := caddytest.NewTester(t)
+	caddyTester.InitServer(`
+	{
+		admin localhost:2999
+		http_port     9080
+		https_port    9443
+		cache {
+			ttl 10s
+		}
+	}
+	localhost:9080 {
+		route /complex-query {
+			cache
+			respond "Hello, {query}!"
+		}
+	}`, "caddyfile")
+
+	cacheChecker := func(tester *caddytest.Tester, query string, expectedDuration int) {
+		body := fmt.Sprintf("Hello, %s!", query)
+		resp1, _ := tester.AssertGetResponse("http://localhost:9080/complex-query?"+query, 200, body)
+		if resp1.Header.Get("Age") != "" {
+			t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+		}
+
+		if resp1.Header.Get("Cache-Status") != "Souin; fwd=uri-miss; stored; key=GET-http-localhost:9080-/complex-query?"+query {
+			t.Errorf("unexpected first Cache-Status header %v", resp1.Header.Get("Cache-Status"))
+		}
+
+		resp1, _ = tester.AssertGetResponse("http://localhost:9080/complex-query?"+query, 200, body)
+
+		if resp1.Header.Get("Age") != "1" {
+			t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
+		}
+
+		if resp1.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-/complex-query?%s; detail=DEFAULT", expectedDuration, query) {
+			t.Errorf(
+				"unexpected second Cache-Status header %v, expected %s",
+				resp1.Header.Get("Cache-Status"),
+				fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-/complex-query?%s; detail=DEFAULT", expectedDuration, query),
+			)
+		}
+	}
+
+	cacheChecker(caddyTester, "fields[]=id&pagination=true", 9)
+	cacheChecker(caddyTester, "fields[]=id&pagination=false", 9)
 }

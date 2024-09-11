@@ -7,6 +7,7 @@ import (
 	"github.com/darkweak/souin/configurationtypes"
 	"github.com/darkweak/souin/pkg/storage/types"
 	"github.com/darkweak/souin/pkg/surrogate/providers"
+	"github.com/darkweak/storages/core"
 )
 
 // SouinApp contains the whole Souin necessary items
@@ -28,8 +29,14 @@ func init() {
 	caddy.RegisterModule(SouinApp{})
 }
 
+// Provision implements caddy.Provisioner
+func (s SouinApp) Provision(_ caddy.Context) error {
+	return nil
+}
+
 // Start will start the App
 func (s SouinApp) Start() error {
+	core.ResetRegisteredStorages()
 	_, _ = up.Delete(stored_providers_key)
 	_, _ = up.LoadOrStore(stored_providers_key, newStorageProvider())
 	if s.DefaultCache.GetTTL() == 0 {
@@ -52,6 +59,7 @@ func (s SouinApp) CaddyModule() caddy.ModuleInfo {
 }
 
 var (
-	_ caddy.App    = (*SouinApp)(nil)
-	_ caddy.Module = (*SouinApp)(nil)
+	_ caddy.App         = (*SouinApp)(nil)
+	_ caddy.Module      = (*SouinApp)(nil)
+	_ caddy.Provisioner = (*SouinApp)(nil)
 )

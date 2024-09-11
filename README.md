@@ -3,6 +3,11 @@ Caddy Module: http.handlers.cache
 
 This is a distributed HTTP cache module for Caddy based on [Souin](https://github.com/darkweak/souin) cache.  
 
+> [!WARNING]
+> Since `v1.7.0` Souin (the development repository that cache-handler is based on) implements only one storage. If you need a specific storage you have to take it from [the storages repository](https://github.com/darkweak/storages) and add it either in your code, during the build otherwise.  
+(e.g. with otter using caddy) You have to build your caddy module with the desired storage `xcaddy build --with github.com/caddyserver/cache-handler --with github.com/darkweak/storages/otter/caddy` and configure otter in your Caddyfile/JSON configuration file.  
+See the [documentation about the storages](https://docs.souin.io/docs/storages).
+
 ## Features
 
  * [RFC 7234](https://httpwg.org/specs/rfc7234.html) compliant HTTP Cache.
@@ -318,22 +323,6 @@ redis-url.com {
 
 You can also use the configuration. Refer to the [Souin docs](https://docs.souin.io/docs/storages/redis/)
 or [rueidis client options](https://github.com/redis/rueidis/blob/main/rueidis.go#L56) to define your config as key value.
-```
-redis-configuration.com {
-    cache {
-        redis {
-            configuration {
-                InitAddress 127.0.0.1:6379
-                Username user
-                Password password
-                SelectDB 1
-                ConnWriteTimeout 5s
-                BlockingPoolSize 99999
-            }
-        }
-    }
-}
-```
 
 What does these directives mean?  
 |  Key                                      |  Description                                                                                                                                 |  Value example                                                                                                          |

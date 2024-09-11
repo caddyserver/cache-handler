@@ -1,6 +1,8 @@
 {
   "apps": {
     "cache": {
+      "Storers": null,
+      "SurrogateStorage": null,
       "allowed_http_verbs": [
         "GET",
         "POST"
@@ -40,6 +42,7 @@
         "strategy": "hard"
       },
       "default_cache_control": "public",
+      "disable_coalescing": false,
       "distributed": false,
       "etcd": {
         "configuration": null,
@@ -47,13 +50,12 @@
         "url": ""
       },
       "headers": [],
-      "key": {
-        "disable_body": false,
-        "disable_host": false,
-        "disable_method": false,
-        "disable_query": false,
-        "headers": null,
-        "hide": false
+      "key": {},
+      "mode": "",
+      "nats": {
+        "configuration": null,
+        "path": "",
+        "url": ""
       },
       "nuts": {
         "configuration": null,
@@ -61,6 +63,11 @@
         "url": ""
       },
       "olric": {
+        "configuration": null,
+        "path": "",
+        "url": ""
+      },
+      "otter": {
         "configuration": null,
         "path": "",
         "url": ""
@@ -74,6 +81,7 @@
         "exclude": "/test2.*"
       },
       "stale": "0s",
+      "storers": null,
       "timeout": {
         "backend": "10s",
         "cache": "100ms"
@@ -115,7 +123,6 @@
                         "security": false
                       }
                     },
-                    "CfgCacheKeys": null,
                     "DefaultCache": {
                       "allowed_http_verbs": [],
                       "badger": {
@@ -126,6 +133,7 @@
                       "cache_name": "",
                       "cdn": {},
                       "default_cache_control": "",
+                      "disable_coalescing": false,
                       "distributed": false,
                       "etcd": {
                         "configuration": null,
@@ -133,13 +141,12 @@
                         "url": ""
                       },
                       "headers": null,
-                      "key": {
-                        "disable_body": false,
-                        "disable_host": false,
-                        "disable_method": false,
-                        "disable_query": false,
-                        "headers": null,
-                        "hide": false
+                      "key": {},
+                      "mode": "",
+                      "nats": {
+                        "configuration": null,
+                        "path": "",
+                        "url": ""
                       },
                       "nuts": {
                         "configuration": null,
@@ -147,6 +154,11 @@
                         "url": ""
                       },
                       "olric": {
+                        "configuration": null,
+                        "path": "",
+                        "url": ""
+                      },
+                      "otter": {
                         "configuration": null,
                         "path": "",
                         "url": ""
@@ -160,6 +172,7 @@
                         "exclude": ""
                       },
                       "stale": "0s",
+                      "storers": null,
                       "timeout": {
                         "backend": "0s",
                         "cache": "0s"
@@ -168,7 +181,8 @@
                     },
                     "LogLevel": "",
                     "SurrogateKeys": null,
-                    "URLs": null
+                    "URLs": null,
+                    "cache_keys": {}
                   },
                   "badger": {
                     "configuration": null,
@@ -181,20 +195,18 @@
                     "url": ""
                   },
                   "handler": "cache",
-                  "key": {
-                    "disable_body": false,
-                    "disable_host": false,
-                    "disable_method": false,
-                    "disable_query": false,
-                    "headers": null,
-                    "hide": false
-                  },
+                  "key": {},
                   "nuts": {
                     "configuration": null,
                     "path": "",
                     "url": ""
                   },
                   "olric": {
+                    "configuration": null,
+                    "path": "",
+                    "url": ""
+                  },
+                  "otter": {
                     "configuration": null,
                     "path": "",
                     "url": ""
@@ -248,7 +260,6 @@
                         "security": false
                       }
                     },
-                    "CfgCacheKeys": null,
                     "DefaultCache": {
                       "allowed_http_verbs": [],
                       "badger": {
@@ -259,6 +270,7 @@
                       "cache_name": "",
                       "cdn": {},
                       "default_cache_control": "",
+                      "disable_coalescing": false,
                       "distributed": false,
                       "etcd": {
                         "configuration": null,
@@ -266,13 +278,12 @@
                         "url": ""
                       },
                       "headers": null,
-                      "key": {
-                        "disable_body": false,
-                        "disable_host": false,
-                        "disable_method": false,
-                        "disable_query": false,
-                        "headers": null,
-                        "hide": false
+                      "key": {},
+                      "mode": "",
+                      "nats": {
+                        "configuration": null,
+                        "path": "",
+                        "url": ""
                       },
                       "nuts": {
                         "configuration": null,
@@ -280,6 +291,11 @@
                         "url": ""
                       },
                       "olric": {
+                        "configuration": null,
+                        "path": "",
+                        "url": ""
+                      },
+                      "otter": {
                         "configuration": null,
                         "path": "",
                         "url": ""
@@ -293,6 +309,7 @@
                         "exclude": ""
                       },
                       "stale": "0s",
+                      "storers": null,
                       "timeout": {
                         "backend": "0s",
                         "cache": "0s"
@@ -301,7 +318,8 @@
                     },
                     "LogLevel": "",
                     "SurrogateKeys": null,
-                    "URLs": null
+                    "URLs": null,
+                    "cache_keys": {}
                   },
                   "badger": {
                     "configuration": null,
@@ -314,20 +332,18 @@
                     "url": ""
                   },
                   "handler": "cache",
-                  "key": {
-                    "disable_body": false,
-                    "disable_host": false,
-                    "disable_method": false,
-                    "disable_query": false,
-                    "headers": null,
-                    "hide": false
-                  },
+                  "key": {},
                   "nuts": {
                     "configuration": null,
                     "path": "",
                     "url": ""
                   },
                   "olric": {
+                    "configuration": null,
+                    "path": "",
+                    "url": ""
+                  },
+                  "otter": {
                     "configuration": null,
                     "path": "",
                     "url": ""
@@ -381,7 +397,6 @@
                         "security": false
                       }
                     },
-                    "CfgCacheKeys": null,
                     "DefaultCache": {
                       "allowed_http_verbs": [],
                       "badger": {
@@ -392,6 +407,7 @@
                       "cache_name": "",
                       "cdn": {},
                       "default_cache_control": "",
+                      "disable_coalescing": false,
                       "distributed": false,
                       "etcd": {
                         "configuration": null,
@@ -399,13 +415,12 @@
                         "url": ""
                       },
                       "headers": null,
-                      "key": {
-                        "disable_body": false,
-                        "disable_host": false,
-                        "disable_method": false,
-                        "disable_query": false,
-                        "headers": null,
-                        "hide": false
+                      "key": {},
+                      "mode": "",
+                      "nats": {
+                        "configuration": null,
+                        "path": "",
+                        "url": ""
                       },
                       "nuts": {
                         "configuration": null,
@@ -413,6 +428,11 @@
                         "url": ""
                       },
                       "olric": {
+                        "configuration": null,
+                        "path": "",
+                        "url": ""
+                      },
+                      "otter": {
                         "configuration": null,
                         "path": "",
                         "url": ""
@@ -426,6 +446,7 @@
                         "exclude": ""
                       },
                       "stale": "0s",
+                      "storers": null,
                       "timeout": {
                         "backend": "0s",
                         "cache": "0s"
@@ -434,7 +455,8 @@
                     },
                     "LogLevel": "",
                     "SurrogateKeys": null,
-                    "URLs": null
+                    "URLs": null,
+                    "cache_keys": {}
                   },
                   "badger": {
                     "configuration": null,
@@ -447,20 +469,18 @@
                     "url": ""
                   },
                   "handler": "cache",
-                  "key": {
-                    "disable_body": false,
-                    "disable_host": false,
-                    "disable_method": false,
-                    "disable_query": false,
-                    "headers": null,
-                    "hide": false
-                  },
+                  "key": {},
                   "nuts": {
                     "configuration": null,
                     "path": "",
                     "url": ""
                   },
                   "olric": {
+                    "configuration": null,
+                    "path": "",
+                    "url": ""
+                  },
+                  "otter": {
                     "configuration": null,
                     "path": "",
                     "url": ""
@@ -514,7 +534,6 @@
                         "security": false
                       }
                     },
-                    "CfgCacheKeys": null,
                     "DefaultCache": {
                       "allowed_http_verbs": [],
                       "badger": {
@@ -525,6 +544,7 @@
                       "cache_name": "",
                       "cdn": {},
                       "default_cache_control": "",
+                      "disable_coalescing": false,
                       "distributed": false,
                       "etcd": {
                         "configuration": null,
@@ -532,13 +552,12 @@
                         "url": ""
                       },
                       "headers": null,
-                      "key": {
-                        "disable_body": false,
-                        "disable_host": false,
-                        "disable_method": false,
-                        "disable_query": false,
-                        "headers": null,
-                        "hide": false
+                      "key": {},
+                      "mode": "",
+                      "nats": {
+                        "configuration": null,
+                        "path": "",
+                        "url": ""
                       },
                       "nuts": {
                         "configuration": null,
@@ -546,6 +565,11 @@
                         "url": ""
                       },
                       "olric": {
+                        "configuration": null,
+                        "path": "",
+                        "url": ""
+                      },
+                      "otter": {
                         "configuration": null,
                         "path": "",
                         "url": ""
@@ -559,6 +583,7 @@
                         "exclude": ""
                       },
                       "stale": "0s",
+                      "storers": null,
                       "timeout": {
                         "backend": "0s",
                         "cache": "0s"
@@ -567,7 +592,8 @@
                     },
                     "LogLevel": "",
                     "SurrogateKeys": null,
-                    "URLs": null
+                    "URLs": null,
+                    "cache_keys": {}
                   },
                   "badger": {
                     "configuration": null,
@@ -580,20 +606,18 @@
                     "url": ""
                   },
                   "handler": "cache",
-                  "key": {
-                    "disable_body": false,
-                    "disable_host": false,
-                    "disable_method": false,
-                    "disable_query": false,
-                    "headers": null,
-                    "hide": false
-                  },
+                  "key": {},
                   "nuts": {
                     "configuration": null,
                     "path": "",
                     "url": ""
                   },
                   "olric": {
+                    "configuration": null,
+                    "path": "",
+                    "url": ""
+                  },
+                  "otter": {
                     "configuration": null,
                     "path": "",
                     "url": ""
@@ -652,7 +676,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -663,6 +686,7 @@
                               "cache_name": "Another",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -670,13 +694,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -684,6 +707,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -697,6 +725,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -705,7 +734,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -718,20 +748,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -794,7 +822,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -811,6 +838,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -818,13 +846,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -832,6 +859,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -845,6 +877,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -853,7 +886,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -866,20 +900,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -946,40 +978,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": {
-                              "body": {
-                                "disable_body": true,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
-                              },
-                              "everything-with-content-type": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": true,
-                                "headers": [
-                                  "Content-Type"
-                                ],
-                                "hide": false
-                              },
-                              "host": {
-                                "disable_body": false,
-                                "disable_host": true,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
-                              },
-                              "method": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": true,
-                                "headers": null,
-                                "hide": false
-                              }
-                            },
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -990,6 +988,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -997,13 +996,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -1011,6 +1009,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -1024,6 +1027,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -1032,7 +1036,24 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {
+                              "body": {
+                                "disable_body": true
+                              },
+                              "everything-with-content-type": {
+                                "disable_method": true,
+                                "headers": [
+                                  "Content-Type"
+                                ]
+                              },
+                              "host": {
+                                "disable_host": true
+                              },
+                              "method": {
+                                "disable_method": true
+                              }
+                            }
                           },
                           "badger": {
                             "configuration": null,
@@ -1045,20 +1066,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -1125,7 +1144,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -1136,6 +1154,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": true,
                               "etcd": {
                                 "configuration": null,
@@ -1143,13 +1162,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -1161,23 +1179,18 @@
                                 "path": "",
                                 "url": ""
                               },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
                               "redis": {
                                 "configuration": {
-                                  "Addr": "127.0.0.1:6379",
-                                  "ConnMaxIdleTime": 5000000000,
-                                  "ConnMaxLifetime": 5000000000,
-                                  "DB": 0,
-                                  "DialTimeout": 5000000000,
-                                  "MaxIdleConns": 100,
-                                  "MaxRetries": 1,
-                                  "MaxRetryBackoff": 5000000000,
-                                  "MinIdleConns": 100,
-                                  "MinRetryBackoff": 5000000000,
-                                  "PoolFIFO": true,
-                                  "PoolSize": 99999,
-                                  "PoolTimeout": 10000000000,
-                                  "ReadTimeout": 5000000000,
-                                  "WriteTimeout": 5000000000
+                                  "ClientName": "souin-redis",
+                                  "InitAddress": [
+                                    "127.0.0.1:6379"
+                                  ],
+                                  "SelectDB": 0
                                 },
                                 "path": "",
                                 "url": ""
@@ -1186,6 +1199,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -1194,7 +1208,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -1207,20 +1222,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -1287,18 +1300,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": {
-                              "/.+": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": [
-                                  "Authorization"
-                                ],
-                                "hide": false
-                              }
-                            },
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -1309,6 +1310,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -1316,13 +1318,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -1330,6 +1331,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -1343,6 +1349,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -1351,7 +1358,14 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {
+                              "/.+": {
+                                "headers": [
+                                  "Authorization"
+                                ]
+                              }
+                            }
                           },
                           "badger": {
                             "configuration": null,
@@ -1364,20 +1378,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -1454,7 +1466,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -1465,6 +1476,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": true,
                               "etcd": {
                                 "configuration": {
@@ -1485,13 +1497,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -1499,6 +1510,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -1512,6 +1528,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -1520,7 +1537,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -1533,20 +1551,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -1613,7 +1629,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -1624,6 +1639,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -1631,13 +1647,164 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "nuts": {
+                                "configuration": {
+                                  "Servers": "nats://127.0.0.1:4222"
+                                },
+                                "path": "",
+                                "url": ""
+                              },
+                              "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "redis": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "regex": {
+                                "exclude": ""
+                              },
+                              "stale": "0s",
+                              "storers": null,
+                              "timeout": {
+                                "backend": "0s",
+                                "cache": "0s"
+                              },
+                              "ttl": "5s"
+                            },
+                            "LogLevel": "",
+                            "SurrogateKeys": null,
+                            "URLs": null,
+                            "cache_keys": {}
+                          },
+                          "badger": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "etcd": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "handler": "cache",
+                          "key": {},
+                          "nuts": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "redis": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "stale": "0s",
+                          "timeout": {
+                            "backend": "0s",
+                            "cache": "0s"
+                          },
+                          "ttl": "0s"
+                        },
+                        {
+                          "body": "Hello nats",
+                          "handler": "static_response"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "path": [
+                    "/nats-configuration"
+                  ]
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "Configuration": {
+                            "API": {
+                              "basepath": "",
+                              "debug": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "prometheus": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "security": {
+                                "basepath": "",
+                                "enable": false,
+                                "secret": "",
+                                "users": null
+                              },
+                              "souin": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              }
+                            },
+                            "DefaultCache": {
+                              "allowed_http_verbs": [],
+                              "badger": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "cache_name": "",
+                              "cdn": {},
+                              "default_cache_control": "",
+                              "disable_coalescing": false,
+                              "distributed": false,
+                              "etcd": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "headers": null,
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": {
@@ -1657,6 +1824,11 @@
                                 "path": "",
                                 "url": ""
                               },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
                               "redis": {
                                 "configuration": null,
                                 "path": "",
@@ -1666,6 +1838,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -1674,7 +1847,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -1687,20 +1861,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -1767,7 +1939,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -1778,6 +1949,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -1785,13 +1957,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -1799,6 +1970,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -1812,6 +1988,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -1820,7 +1997,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -1833,20 +2011,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -1917,7 +2093,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -1928,6 +2103,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -1935,13 +2111,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -1949,6 +2124,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -1962,6 +2142,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "1s",
                                 "cache": "1ms"
@@ -1970,7 +2151,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -1983,20 +2165,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -2067,7 +2247,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -2078,6 +2257,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -2085,13 +2265,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -2099,6 +2278,175 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "redis": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "regex": {
+                                "exclude": ""
+                              },
+                              "stale": "5s",
+                              "storers": null,
+                              "timeout": {
+                                "backend": "0s",
+                                "cache": "0s"
+                              },
+                              "ttl": "5s"
+                            },
+                            "LogLevel": "",
+                            "SurrogateKeys": null,
+                            "URLs": null,
+                            "cache_keys": {}
+                          },
+                          "badger": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "etcd": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "handler": "cache",
+                          "key": {},
+                          "nuts": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "redis": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "stale": "0s",
+                          "timeout": {
+                            "backend": "0s",
+                            "cache": "0s"
+                          },
+                          "ttl": "0s"
+                        },
+                        {
+                          "handler": "headers",
+                          "response": {
+                            "set": {
+                              "Cache-Control": [
+                                "must-revalidate"
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "handler": "reverse_proxy",
+                          "upstreams": [
+                            {
+                              "dial": "127.0.0.1:81"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "path": [
+                    "/must-revalidate"
+                  ]
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "Configuration": {
+                            "API": {
+                              "basepath": "",
+                              "debug": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "prometheus": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "security": {
+                                "basepath": "",
+                                "enable": false,
+                                "secret": "",
+                                "users": null
+                              },
+                              "souin": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              }
+                            },
+                            "DefaultCache": {
+                              "allowed_http_verbs": [],
+                              "badger": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "cache_name": "",
+                              "cdn": {},
+                              "default_cache_control": "",
+                              "disable_coalescing": false,
+                              "distributed": false,
+                              "etcd": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "headers": null,
+                              "key": {},
+                              "mode": "bypass_response",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "nuts": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -2112,6 +2460,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -2120,7 +2469,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -2133,20 +2483,338 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "redis": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "stale": "0s",
+                          "timeout": {
+                            "backend": "0s",
+                            "cache": "0s"
+                          },
+                          "ttl": "0s"
+                        },
+                        {
+                          "handler": "headers",
+                          "response": {
+                            "set": {
+                              "Cache-Control": [
+                                "no-cache, no-store"
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "body": "Hello bypass_response",
+                          "handler": "static_response"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "path": [
+                    "/bypass_response"
+                  ]
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "Configuration": {
+                            "API": {
+                              "basepath": "",
+                              "debug": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "prometheus": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "security": {
+                                "basepath": "",
+                                "enable": false,
+                                "secret": "",
+                                "users": null
+                              },
+                              "souin": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              }
+                            },
+                            "DefaultCache": {
+                              "allowed_http_verbs": [],
+                              "badger": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "cache_name": "",
+                              "cdn": {},
+                              "default_cache_control": "",
+                              "disable_coalescing": false,
+                              "distributed": false,
+                              "etcd": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "headers": null,
+                              "key": {},
+                              "mode": "strict",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "nuts": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "redis": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "regex": {
+                                "exclude": ""
+                              },
+                              "stale": "0s",
+                              "storers": null,
+                              "timeout": {
+                                "backend": "0s",
+                                "cache": "0s"
+                              },
+                              "ttl": "0s"
+                            },
+                            "LogLevel": "",
+                            "SurrogateKeys": null,
+                            "URLs": null,
+                            "cache_keys": {}
+                          },
+                          "badger": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "etcd": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "handler": "cache",
+                          "key": {},
+                          "nuts": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "redis": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "stale": "0s",
+                          "timeout": {
+                            "backend": "0s",
+                            "cache": "0s"
+                          },
+                          "ttl": "0s"
+                        },
+                        {
+                          "handler": "headers",
+                          "response": {
+                            "set": {
+                              "Cache-Control": [
+                                "no-cache, no-store"
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "body": "Hello strict",
+                          "handler": "static_response"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "path": [
+                    "/strict_response"
+                  ]
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "Configuration": {
+                            "API": {
+                              "basepath": "",
+                              "debug": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "prometheus": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "security": {
+                                "basepath": "",
+                                "enable": false,
+                                "secret": "",
+                                "users": null
+                              },
+                              "souin": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              }
+                            },
+                            "DefaultCache": {
+                              "allowed_http_verbs": [],
+                              "badger": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "cache_name": "",
+                              "cdn": {},
+                              "default_cache_control": "",
+                              "disable_coalescing": false,
+                              "distributed": false,
+                              "etcd": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "headers": null,
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "nuts": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "redis": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "regex": {
+                                "exclude": ""
+                              },
+                              "stale": "0s",
+                              "storers": null,
+                              "timeout": {
+                                "backend": "0s",
+                                "cache": "0s"
+                              },
+                              "ttl": "0s"
+                            },
+                            "LogLevel": "",
+                            "SurrogateKeys": null,
+                            "URLs": null,
+                            "cache_keys": {}
+                          },
+                          "badger": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "etcd": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "handler": "cache",
+                          "key": {},
+                          "nuts": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -2223,7 +2891,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -2234,6 +2901,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -2241,13 +2909,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -2255,6 +2922,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -2268,6 +2940,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -2276,7 +2949,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -2289,20 +2963,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -2379,7 +3051,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -2390,6 +3061,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -2397,13 +3069,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -2411,6 +3082,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -2424,6 +3100,7 @@
                                 "exclude": ""
                               },
                               "stale": "5s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -2432,7 +3109,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -2445,20 +3123,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -2535,7 +3211,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -2546,6 +3221,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -2553,13 +3229,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -2567,6 +3242,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -2580,6 +3260,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -2588,7 +3269,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -2601,20 +3283,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -2701,7 +3381,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -2712,6 +3391,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -2719,13 +3399,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "bypass_request",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -2733,6 +3412,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -2746,6 +3430,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -2754,7 +3439,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -2767,20 +3453,318 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "redis": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "stale": "0s",
+                          "timeout": {
+                            "backend": "0s",
+                            "cache": "0s"
+                          },
+                          "ttl": "0s"
+                        },
+                        {
+                          "body": "Hello bypass_request",
+                          "handler": "static_response"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "path": [
+                    "/bypass_request"
+                  ]
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "Configuration": {
+                            "API": {
+                              "basepath": "",
+                              "debug": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "prometheus": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "security": {
+                                "basepath": "",
+                                "enable": false,
+                                "secret": "",
+                                "users": null
+                              },
+                              "souin": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              }
+                            },
+                            "DefaultCache": {
+                              "allowed_http_verbs": [],
+                              "badger": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "cache_name": "",
+                              "cdn": {},
+                              "default_cache_control": "",
+                              "disable_coalescing": false,
+                              "distributed": false,
+                              "etcd": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "headers": null,
+                              "key": {},
+                              "mode": "strict",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "nuts": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "redis": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "regex": {
+                                "exclude": ""
+                              },
+                              "stale": "0s",
+                              "storers": null,
+                              "timeout": {
+                                "backend": "0s",
+                                "cache": "0s"
+                              },
+                              "ttl": "0s"
+                            },
+                            "LogLevel": "",
+                            "SurrogateKeys": null,
+                            "URLs": null,
+                            "cache_keys": {}
+                          },
+                          "badger": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "etcd": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "handler": "cache",
+                          "key": {},
+                          "nuts": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "redis": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "stale": "0s",
+                          "timeout": {
+                            "backend": "0s",
+                            "cache": "0s"
+                          },
+                          "ttl": "0s"
+                        },
+                        {
+                          "body": "Hello strict",
+                          "handler": "static_response"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "path": [
+                    "/strict_request"
+                  ]
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "Configuration": {
+                            "API": {
+                              "basepath": "",
+                              "debug": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "prometheus": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "security": {
+                                "basepath": "",
+                                "enable": false,
+                                "secret": "",
+                                "users": null
+                              },
+                              "souin": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              }
+                            },
+                            "DefaultCache": {
+                              "allowed_http_verbs": [],
+                              "badger": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "cache_name": "",
+                              "cdn": {},
+                              "default_cache_control": "",
+                              "disable_coalescing": false,
+                              "distributed": false,
+                              "etcd": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "headers": null,
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "nuts": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "redis": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "regex": {
+                                "exclude": ""
+                              },
+                              "stale": "0s",
+                              "storers": null,
+                              "timeout": {
+                                "backend": "0s",
+                                "cache": "0s"
+                              },
+                              "ttl": "0s"
+                            },
+                            "LogLevel": "",
+                            "SurrogateKeys": null,
+                            "URLs": null,
+                            "cache_keys": {}
+                          },
+                          "badger": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "etcd": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "handler": "cache",
+                          "key": {},
+                          "nuts": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -2857,7 +3841,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -2868,6 +3851,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -2875,13 +3859,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -2889,6 +3872,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -2902,6 +3890,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -2910,7 +3899,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -2923,20 +3913,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -3007,7 +3995,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -3018,6 +4005,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -3025,13 +4013,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -3039,6 +4026,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -3052,6 +4044,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -3060,7 +4053,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -3073,20 +4067,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -3163,7 +4155,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -3174,6 +4165,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": true,
                               "etcd": {
                                 "configuration": null,
@@ -3181,13 +4173,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -3195,6 +4186,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -3208,6 +4204,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -3216,7 +4213,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -3229,20 +4227,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -3309,7 +4305,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -3320,6 +4315,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -3327,13 +4323,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -3341,6 +4336,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -3354,6 +4354,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -3362,7 +4363,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -3375,20 +4377,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -3459,7 +4459,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -3470,20 +4469,20 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
-                              "distributed": true,
+                              "disable_coalescing": false,
+                              "distributed": false,
                               "etcd": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "bypass",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -3495,27 +4494,13 @@
                                 "path": "",
                                 "url": ""
                               },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
                               "redis": {
-                                "configuration": {
-                                  "Addr": "127.0.0.1:6379",
-                                  "ConnMaxIdleTime": 5000000000,
-                                  "ConnMaxLifetime": 5000000000,
-                                  "DB": 1,
-                                  "DialTimeout": 5000000000,
-                                  "MaxIdleConns": 100,
-                                  "MaxRetries": 1,
-                                  "MaxRetryBackoff": 5000000000,
-                                  "MinIdleConns": 100,
-                                  "MinRetryBackoff": 5000000000,
-                                  "Network": "my-network",
-                                  "Password": "password",
-                                  "PoolFIFO": true,
-                                  "PoolSize": 99999,
-                                  "PoolTimeout": 10000000000,
-                                  "ReadTimeout": 5000000000,
-                                  "Username": "user",
-                                  "WriteTimeout": 5000000000
-                                },
+                                "configuration": null,
                                 "path": "",
                                 "url": ""
                               },
@@ -3523,15 +4508,17 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
                               },
-                              "ttl": "5s"
+                              "ttl": "0s"
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -3544,20 +4531,184 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "redis": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "stale": "0s",
+                          "timeout": {
+                            "backend": "0s",
+                            "cache": "0s"
+                          },
+                          "ttl": "0s"
+                        },
+                        {
+                          "handler": "headers",
+                          "response": {
+                            "set": {
+                              "Cache-Control": [
+                                "no-store"
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "body": "Hello bypass",
+                          "handler": "static_response"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "path": [
+                    "/bypass"
+                  ]
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "Configuration": {
+                            "API": {
+                              "basepath": "",
+                              "debug": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "prometheus": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "security": {
+                                "basepath": "",
+                                "enable": false,
+                                "secret": "",
+                                "users": null
+                              },
+                              "souin": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              }
+                            },
+                            "DefaultCache": {
+                              "allowed_http_verbs": [],
+                              "badger": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "cache_name": "",
+                              "cdn": {},
+                              "default_cache_control": "",
+                              "disable_coalescing": false,
+                              "distributed": true,
+                              "etcd": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "headers": null,
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "nuts": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "redis": {
+                                "configuration": {
+                                  "ClientName": "souin-redis",
+                                  "InitAddress": [
+                                    "127.0.0.1:6379"
+                                  ],
+                                  "SelectDB": 0
+                                },
+                                "path": "",
+                                "url": ""
+                              },
+                              "regex": {
+                                "exclude": ""
+                              },
+                              "stale": "0s",
+                              "storers": null,
+                              "timeout": {
+                                "backend": "0s",
+                                "cache": "0s"
+                              },
+                              "ttl": "5s"
+                            },
+                            "LogLevel": "",
+                            "SurrogateKeys": null,
+                            "URLs": null,
+                            "cache_keys": {}
+                          },
+                          "badger": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "etcd": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "handler": "cache",
+                          "key": {},
+                          "nuts": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -3624,7 +4775,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -3635,6 +4785,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": true,
                               "etcd": {
                                 "configuration": {
@@ -3658,13 +4809,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -3672,6 +4822,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -3685,6 +4840,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -3693,7 +4849,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -3706,20 +4863,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -3786,7 +4941,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -3797,6 +4951,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -3804,20 +4959,24 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
-                              },
-                              "nuts": {
+                              "key": {},
+                              "mode": "",
+                              "nats": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
                               },
+                              "nuts": {
+                                "configuration": null,
+                                "path": "",
+                                "url": "nats://127.0.0.1:4222"
+                              },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -3831,15 +4990,17 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
                               },
-                              "ttl": "15s"
+                              "ttl": "5s"
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -3852,20 +5013,168 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "redis": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "stale": "0s",
+                          "timeout": {
+                            "backend": "0s",
+                            "cache": "0s"
+                          },
+                          "ttl": "0s"
+                        },
+                        {
+                          "body": "Hello nats",
+                          "handler": "static_response"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "path": [
+                    "/nats"
+                  ]
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "Configuration": {
+                            "API": {
+                              "basepath": "",
+                              "debug": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "prometheus": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              },
+                              "security": {
+                                "basepath": "",
+                                "enable": false,
+                                "secret": "",
+                                "users": null
+                              },
+                              "souin": {
+                                "basepath": "",
+                                "enable": false,
+                                "security": false
+                              }
+                            },
+                            "DefaultCache": {
+                              "allowed_http_verbs": [],
+                              "badger": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "cache_name": "",
+                              "cdn": {},
+                              "default_cache_control": "",
+                              "disable_coalescing": false,
+                              "distributed": false,
+                              "etcd": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "headers": null,
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "nuts": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "redis": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "regex": {
+                                "exclude": ""
+                              },
+                              "stale": "0s",
+                              "storers": null,
+                              "timeout": {
+                                "backend": "0s",
+                                "cache": "0s"
+                              },
+                              "ttl": "15s"
+                            },
+                            "LogLevel": "",
+                            "SurrogateKeys": null,
+                            "URLs": null,
+                            "cache_keys": {}
+                          },
+                          "badger": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "etcd": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "handler": "cache",
+                          "key": {},
+                          "nuts": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -3942,7 +5251,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -3953,6 +5261,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -3960,13 +5269,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -3974,6 +5282,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -3987,6 +5300,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -3995,7 +5309,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -4008,20 +5323,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -4108,7 +5421,6 @@
                                 "security": false
                               }
                             },
-                            "CfgCacheKeys": null,
                             "DefaultCache": {
                               "allowed_http_verbs": [],
                               "badger": {
@@ -4119,6 +5431,7 @@
                               "cache_name": "",
                               "cdn": {},
                               "default_cache_control": "",
+                              "disable_coalescing": false,
                               "distributed": false,
                               "etcd": {
                                 "configuration": null,
@@ -4126,13 +5439,12 @@
                                 "url": ""
                               },
                               "headers": null,
-                              "key": {
-                                "disable_body": false,
-                                "disable_host": false,
-                                "disable_method": false,
-                                "disable_query": false,
-                                "headers": null,
-                                "hide": false
+                              "key": {},
+                              "mode": "",
+                              "nats": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
                               },
                               "nuts": {
                                 "configuration": null,
@@ -4140,6 +5452,11 @@
                                 "url": ""
                               },
                               "olric": {
+                                "configuration": null,
+                                "path": "",
+                                "url": ""
+                              },
+                              "otter": {
                                 "configuration": null,
                                 "path": "",
                                 "url": ""
@@ -4153,6 +5470,7 @@
                                 "exclude": ""
                               },
                               "stale": "0s",
+                              "storers": null,
                               "timeout": {
                                 "backend": "0s",
                                 "cache": "0s"
@@ -4161,7 +5479,8 @@
                             },
                             "LogLevel": "",
                             "SurrogateKeys": null,
-                            "URLs": null
+                            "URLs": null,
+                            "cache_keys": {}
                           },
                           "badger": {
                             "configuration": null,
@@ -4174,20 +5493,18 @@
                             "url": ""
                           },
                           "handler": "cache",
-                          "key": {
-                            "disable_body": false,
-                            "disable_host": false,
-                            "disable_method": false,
-                            "disable_query": false,
-                            "headers": null,
-                            "hide": false
-                          },
+                          "key": {},
                           "nuts": {
                             "configuration": null,
                             "path": "",
                             "url": ""
                           },
                           "olric": {
+                            "configuration": null,
+                            "path": "",
+                            "url": ""
+                          },
+                          "otter": {
                             "configuration": null,
                             "path": "",
                             "url": ""
@@ -4215,7 +5532,7 @@
                           }
                         },
                         {
-                          "body": "<esi:include src=\"http://localhost:4443/esi-include\" alt=http://localhost:4443/alt-esi-include />",
+                          "body": "\u003cesi:include src=\"http://localhost:4443/esi-include\" alt=http://localhost:4443/alt-esi-include /\u003e",
                           "handler": "static_response"
                         }
                       ]

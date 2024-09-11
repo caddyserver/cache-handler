@@ -63,7 +63,7 @@ jobs:
 
     - name: Run tests
       run: |
-        go test -v -coverprofile="cover-profile.out" -short -race ./...
+        go test -v -coverprofile="cover-profile.out" -race ./...
 
   golangci:
     name: Lint

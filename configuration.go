@@ -8,7 +8,7 @@ import (
 
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/darkweak/souin/configurationtypes"
-	"go.uber.org/zap"
+	"github.com/darkweak/storages/core"
 )
 
 // DefaultCache the struct
@@ -38,6 +38,8 @@ type DefaultCache struct {
 	Redis configurationtypes.CacheProvider `json:"redis"`
 	// Etcd provider configuration.
 	Etcd configurationtypes.CacheProvider `json:"etcd"`
+	// Nats provider configuration.
+	Nats configurationtypes.CacheProvider `json:"nats"`
 	// NutsDB provider configuration.
 	Nuts configurationtypes.CacheProvider `json:"nuts"`
 	// Otter provider configuration.
@@ -52,6 +54,8 @@ type DefaultCache struct {
 	TTL configurationtypes.Duration `json:"ttl"`
 	// Stale time to live.
 	Stale configurationtypes.Duration `json:"stale"`
+	// Disable the coalescing system.
+	DisableCoalescing bool `json:"disable_coalescing"`
 }
 
 // GetAllowedHTTPVerbs returns the allowed verbs to cache
@@ -97,6 +101,11 @@ func (d *DefaultCache) GetEtcd() configurationtypes.CacheProvider {
 // GetMode returns mdoe configuration
 func (d *DefaultCache) GetMode() string {
 	return d.Mode
+}
+
+// GetNats returns nuts configuration
+func (d *DefaultCache) GetNats() configurationtypes.CacheProvider {
+	return d.Nats
 }
 
 // GetNuts returns nuts configuration
@@ -154,6 +163,11 @@ func (d *DefaultCache) GetMaxBodyBytes() uint64 {
 	return d.MaxBodyBytes
 }
 
+// IsCoalescingDisable returns if the coalescing is disabled
+func (d *DefaultCache) IsCoalescingDisable() bool {
+	return d.DisableCoalescing
+}
+
 // Configuration holder
 type Configuration struct {
 	// Default cache to fallback on when none are redefined.
@@ -168,7 +182,7 @@ type Configuration struct {
 	LogLevel string
 	// SurrogateKeys contains the surrogate keys to use with a predefined mapping
 	SurrogateKeys map[string]configurationtypes.SurrogateKeys
-	logger        *zap.Logger
+	logger        core.Logger
 }
 
 // GetUrls get the urls list in the configuration
@@ -197,12 +211,12 @@ func (c *Configuration) GetLogLevel() string {
 }
 
 // GetLogger get the logger
-func (c *Configuration) GetLogger() *zap.Logger {
+func (c *Configuration) GetLogger() core.Logger {
 	return c.logger
 }
 
 // SetLogger set the logger
-func (c *Configuration) SetLogger(l *zap.Logger) {
+func (c *Configuration) SetLogger(l core.Logger) {
 	c.logger = l
 }
 
@@ -269,19 +283,25 @@ func parseBadgerConfiguration(c map[string]interface{}) map[string]interface{} {
 func parseRedisConfiguration(c map[string]interface{}) map[string]interface{} {
 	for k, v := range c {
 		switch k {
-		case "InitAddress":
+		case "Addrs", "InitAddress":
 			if s, ok := v.(string); ok {
 				c[k] = []string{s}
 			} else {
 				c[k] = v
 			}
-		case "Username", "Password", "ClientName", "ClientSetInfo", "ClientTrackingOptions":
+		case "Username", "Password", "ClientName", "ClientSetInfo", "ClientTrackingOptions", "SentinelUsername", "SentinelPassword", "MasterName", "IdentitySuffix":
 			c[k] = v
 		case "SendToReplicas", "ShuffleInit", "ClientNoTouch", "DisableRetry", "DisableCache", "AlwaysPipelining", "AlwaysRESP2", "ForceSingleClient", "ReplicaOnly", "ClientNoEvict":
 			c[k] = true
-		case "SelectDB", "CacheSizeEachConn", "RingScaleEachConn", "ReadBufferEachConn", "WriteBufferEachConn", "BlockingPoolSize", "PipelineMultiplex":
-			c[k], _ = strconv.Atoi(v.(string))
-		case "ConnWriteTimeout", "MaxFlushDelay":
+		case "SelectDB", "CacheSizeEachConn", "RingScaleEachConn", "ReadBufferEachConn", "WriteBufferEachConn", "BlockingPoolSize", "PipelineMultiplex", "DB", "Protocol", "MaxRetries", "PoolSize", "MinIdleConns", "MaxIdleConns", "MaxActiveConns", "MaxRedirects":
+			if v == false {
+				c[k] = 0
+			} else if v == true {
+				c[k] = 1
+			} else {
+				c[k], _ = strconv.Atoi(v.(string))
+			}
+		case "ConnWriteTimeout", "MaxFlushDelay", "MinRetryBackoff", "MaxRetryBackoff", "DialTimeout", "ReadTimeout", "WriteTimeout", "PoolTimeout", "ConnMaxIdleTime", "ConnMaxLifetime":
 			c[k], _ = time.ParseDuration(v.(string))
 		}
 	}
@@ -350,7 +370,7 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 				}
 				cfg.API = apiConfiguration
 			case "badger":
-				provider := configurationtypes.CacheProvider{}
+				provider := configurationtypes.CacheProvider{Found: true}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
 					switch directive {
@@ -447,7 +467,7 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 				}
 			case "etcd":
 				cfg.DefaultCache.Distributed = true
-				provider := configurationtypes.CacheProvider{}
+				provider := configurationtypes.CacheProvider{Found: true}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
 					switch directive {
@@ -497,8 +517,23 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 					return h.Errf("mode must contains only one arg: %s given", args)
 				}
 				cfg.DefaultCache.Mode = args[0]
+			case "nats":
+				provider := configurationtypes.CacheProvider{Found: true}
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					directive := h.Val()
+					switch directive {
+					case "url":
+						urlArgs := h.RemainingArgs()
+						provider.URL = urlArgs[0]
+					case "configuration":
+						provider.Configuration = parseCaddyfileRecursively(h)
+					default:
+						return h.Errf("unsupported nats directive: %s", directive)
+					}
+				}
+				cfg.DefaultCache.Nuts = provider
 			case "nuts":
-				provider := configurationtypes.CacheProvider{}
+				provider := configurationtypes.CacheProvider{Found: true}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
 					switch directive {
@@ -516,7 +551,7 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 				}
 				cfg.DefaultCache.Nuts = provider
 			case "otter":
-				provider := configurationtypes.CacheProvider{}
+				provider := configurationtypes.CacheProvider{Found: true}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
 					switch directive {
@@ -529,7 +564,7 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 				cfg.DefaultCache.Otter = provider
 			case "olric":
 				cfg.DefaultCache.Distributed = true
-				provider := configurationtypes.CacheProvider{}
+				provider := configurationtypes.CacheProvider{Found: true}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
 					switch directive {
@@ -548,7 +583,7 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 				cfg.DefaultCache.Olric = provider
 			case "redis":
 				cfg.DefaultCache.Distributed = true
-				provider := configurationtypes.CacheProvider{}
+				provider := configurationtypes.CacheProvider{Found: true}
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					directive := h.Val()
 					switch directive {
@@ -615,6 +650,8 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 				if err == nil {
 					cfg.DefaultCache.TTL.Duration = ttl
 				}
+			case "disable_coalescing":
+				cfg.DefaultCache.DisableCoalescing = true
 			default:
 				return h.Errf("unsupported root directive: %s", rootOption)
 			}

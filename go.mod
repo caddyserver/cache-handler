@@ -1,4 +1,4 @@
-module github.com/caddyserver/cache-handler
+module github.com/Redocly/cache-handler
 
 go 1.22.1
 

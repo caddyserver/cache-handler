@@ -5,7 +5,7 @@ This is a distributed HTTP cache module for Caddy based on [Souin](https://githu
 
 > [!WARNING]
 > Since `v1.7.0` Souin (the development repository that cache-handler is based on) implements only one storage. If you need a specific storage you have to take it from [the storages repository](https://github.com/darkweak/storages) and add it either in your code, during the build otherwise.  
-(e.g. with otter using caddy) You have to build your caddy module with the desired storage `xcaddy build --with github.com/caddyserver/cache-handler --with github.com/darkweak/storages/otter/caddy` and configure otter in your Caddyfile/JSON configuration file.  
+(e.g. with otter using caddy) You have to build your caddy module with the desired storage `xcaddy build --with github.com/Redocly/cache-handler --with github.com/darkweak/storages/otter/caddy` and configure otter in your Caddyfile/JSON configuration file.  
 See the [documentation about the storages](https://docs.souin.io/docs/storages).
 
 ## Features

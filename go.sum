@@ -30,8 +30,8 @@ github.com/Microsoft/go-winio v0.6.0 h1:slsWYD/zyx7lCXoZVlvQrj0hPTM1HI4+v1sIda2y
 github.com/Microsoft/go-winio v0.6.0/go.mod h1:cTAf44im0RAYeL23bpB+fzCyDH2MJiz2BO69KH/soAE=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/Redocly/souin v0.0.0-20241011135522-b52ef127760f h1:KkN7NWCTsH3TuX45R0GuX7Z69jr2fR40thRFq+lx4F8=
-github.com/Redocly/souin v0.0.0-20241011135522-b52ef127760f/go.mod h1:D/O8oEx+WXztzj0hshvo0kiizaIqqut0zd/iPIvEaJI=
+github.com/Redocly/souin v0.0.0-20241011141849-09a7ddb4b0ac h1:M5X69AdqsDEZwpNClSyi72NUTx9961mmKa+R/2plQGQ=
+github.com/Redocly/souin v0.0.0-20241011141849-09a7ddb4b0ac/go.mod h1:D/O8oEx+WXztzj0hshvo0kiizaIqqut0zd/iPIvEaJI=
 github.com/alecthomas/assert/v2 v2.6.0 h1:o3WJwILtexrEUk3cUVal3oiQY2tfgr/FHWiz/v2n4FU=
 github.com/alecthomas/assert/v2 v2.6.0/go.mod h1:Bze95FyfUr7x34QZrjL+XP+0qgp/zg8yS+TtBj1WA3k=
 github.com/alecthomas/chroma/v2 v2.2.0/go.mod h1:vf4zrexSH54oEjJ7EdB65tGNHmH3pGZmVkgTP5RHvAs=

@@ -30,6 +30,8 @@ github.com/Microsoft/go-winio v0.6.0 h1:slsWYD/zyx7lCXoZVlvQrj0hPTM1HI4+v1sIda2y
 github.com/Microsoft/go-winio v0.6.0/go.mod h1:cTAf44im0RAYeL23bpB+fzCyDH2MJiz2BO69KH/soAE=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
+github.com/Redocly/souin v0.0.0-20241011135522-b52ef127760f h1:KkN7NWCTsH3TuX45R0GuX7Z69jr2fR40thRFq+lx4F8=
+github.com/Redocly/souin v0.0.0-20241011135522-b52ef127760f/go.mod h1:D/O8oEx+WXztzj0hshvo0kiizaIqqut0zd/iPIvEaJI=
 github.com/alecthomas/assert/v2 v2.6.0 h1:o3WJwILtexrEUk3cUVal3oiQY2tfgr/FHWiz/v2n4FU=
 github.com/alecthomas/assert/v2 v2.6.0/go.mod h1:Bze95FyfUr7x34QZrjL+XP+0qgp/zg8yS+TtBj1WA3k=
 github.com/alecthomas/chroma/v2 v2.2.0/go.mod h1:vf4zrexSH54oEjJ7EdB65tGNHmH3pGZmVkgTP5RHvAs=
@@ -109,8 +111,6 @@ github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46t
 github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7DoTY=
 github.com/darkweak/go-esi v0.0.5 h1:b9LHI8Tz46R+i6p8avKPHAIBRQUCZDebNmKm5w/Zrns=
 github.com/darkweak/go-esi v0.0.5/go.mod h1:koCJqwum1u6mslyZuq/Phm6hfG1K3ZK5Y7jrUBTH654=
-github.com/darkweak/souin v1.7.0 h1:QeSxwHECzZPlYHTGYDw4xQ6EBJY94f/nfqW4BLc3YQ0=
-github.com/darkweak/souin v1.7.0/go.mod h1:XXmhB+QIiZ/lkESd1izzqCI7QWxmX0of01QA+xxgogc=
 github.com/darkweak/storages/core v0.0.8 h1:9e7rOxHiJwnvADDVCZ7LFRnUnOHGT+UMpNOFlR8BOiw=
 github.com/darkweak/storages/core v0.0.8/go.mod h1:ajTpB9IFLRIRY0EEFLjM5vtsrcNTh+TJK9yRxgG5/wY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

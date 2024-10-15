@@ -10,9 +10,9 @@ import (
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
-	"github.com/Redocly/souin/configurationtypes"
-	"github.com/Redocly/souin/pkg/middleware"
-	surrogates_providers "github.com/Redocly/souin/pkg/surrogate/providers"
+	"github.com/darkweak/souin/configurationtypes"
+	"github.com/darkweak/souin/pkg/middleware"
+	surrogates_providers "github.com/darkweak/souin/pkg/surrogate/providers"
 	"github.com/darkweak/storages/core"
 )
 

@@ -3,8 +3,8 @@ module github.com/Redocly/cache-handler
 go 1.22.1
 
 require (
-	github.com/Redocly/souin v0.0.0-20241011141849-09a7ddb4b0ac
 	github.com/caddyserver/caddy/v2 v2.8.4
+	github.com/darkweak/souin v1.7.3-0.20241014133359-99bdcca183ce
 	github.com/darkweak/storages/core v0.0.8
 )
 

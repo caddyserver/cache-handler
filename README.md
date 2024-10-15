@@ -1,7 +1,7 @@
 Caddy Module: http.handlers.cache
 ================================
 
-This is a distributed HTTP cache module for Caddy based on [Souin](https://github.com/Redocly/souin) cache.  
+This is a distributed HTTP cache module for Caddy based on [Souin](https://github.com/darkweak/souin) cache.  
 
 > [!WARNING]
 > Since `v1.7.0` Souin (the development repository that cache-handler is based on) implements only one storage. If you need a specific storage you have to take it from [the storages repository](https://github.com/darkweak/storages) and add it either in your code, during the build otherwise.  
@@ -394,7 +394,7 @@ What does these directives mean?
 Other resources
 ---------------
 You can find an example for the [Caddyfile](Caddyfile) or the [JSON file](configuration.json).  
-See the [Souin](https://github.com/Redocly/souin) configuration for the full configuration, and its associated [Caddyfile](https://github.com/Redocly/souin/blob/master/plugins/caddy/Caddyfile)  
+See the [Souin](https://github.com/darkweak/souin) configuration for the full configuration, and its associated [Caddyfile](https://github.com/darkweak/souin/blob/master/plugins/caddy/Caddyfile)  
 
 ### Development and Stable Versions
 

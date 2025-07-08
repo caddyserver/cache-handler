@@ -321,11 +321,12 @@ func parseRedisConfiguration(c map[string]interface{}) map[string]interface{} {
 		case "SendToReplicas", "ShuffleInit", "ClientNoTouch", "DisableRetry", "DisableCache", "AlwaysPipelining", "AlwaysRESP2", "ForceSingleClient", "ReplicaOnly", "ClientNoEvict", "ContextTimeoutEnabled", "PoolFIFO", "ReadOnly", "RouteByLatency", "RouteRandomly", "DisableIndentity":
 			c[k] = true
 		case "SelectDB", "CacheSizeEachConn", "RingScaleEachConn", "ReadBufferEachConn", "WriteBufferEachConn", "BlockingPoolSize", "PipelineMultiplex", "DB", "Protocol", "MaxRetries", "PoolSize", "MinIdleConns", "MaxIdleConns", "MaxActiveConns", "MaxRedirects":
-			if v == false {
+			switch v {
+			case false:
 				c[k] = 0
-			} else if v == true {
+			case true:
 				c[k] = 1
-			} else {
+			default:
 				c[k], _ = strconv.Atoi(v.(string))
 			}
 		case "ConnWriteTimeout", "MaxFlushDelay", "MinRetryBackoff", "MaxRetryBackoff", "DialTimeout", "ReadTimeout", "WriteTimeout", "PoolTimeout", "ConnMaxIdleTime", "ConnMaxLifetime":
@@ -362,19 +363,21 @@ func parseSimpleFSConfiguration(c map[string]interface{}) map[string]interface{}
 		case "path":
 			c[k] = v
 		case "size":
-			if v == false {
+			switch v {
+			case false:
 				c[k] = 0
-			} else if v == true {
+			case true:
 				c[k] = 1
-			} else {
+			default:
 				c[k], _ = strconv.Atoi(v.(string))
 			}
 		case "directory_size":
-			if v == false {
+			switch v {
+			case false:
 				c[k] = 0
-			} else if v == true {
+			case true:
 				c[k] = 1
-			} else {
+			default:
 				c[k], _ = strconv.Atoi(v.(string))
 			}
 		}

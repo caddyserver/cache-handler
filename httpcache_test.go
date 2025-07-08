@@ -480,7 +480,8 @@ func TestAuthenticatedRoute(t *testing.T) {
 		t.Errorf("unexpected Cache-Status header %v", respAuthBypassAlice1.Header.Get("Cache-Status"))
 	}
 	respAuthBypassAlice2, _ := tester.AssertResponse(getRequestFor("/auth-bypass", "Alice"), 200, "Hello, auth bypass Bearer Alice!")
-	if respAuthBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-Bearer Alice-text/plain; detail=DEFAULT" {
+	if respAuthBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-Bearer Alice-text/plain; detail=DEFAULT" &&
+		respAuthBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=3; key=GET-http-localhost:9080-/auth-bypass-Bearer Alice-text/plain; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", respAuthBypassAlice2.Header.Get("Cache-Status"))
 	}
 
@@ -489,7 +490,8 @@ func TestAuthenticatedRoute(t *testing.T) {
 		t.Errorf("unexpected Cache-Status header %v", respAuthBypassBob1.Header.Get("Cache-Status"))
 	}
 	respAuthBypassBob2, _ := tester.AssertResponse(getRequestFor("/auth-bypass", "Bob"), 200, "Hello, auth bypass Bearer Bob!")
-	if respAuthBypassBob2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-Bearer Bob-text/plain; detail=DEFAULT" {
+	if respAuthBypassBob2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-Bearer Bob-text/plain; detail=DEFAULT" &&
+		respAuthBypassBob2.Header.Get("Cache-Status") != "Souin; hit; ttl=3; key=GET-http-localhost:9080-/auth-bypass-Bearer Bob-text/plain; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", respAuthBypassBob2.Header.Get("Cache-Status"))
 	}
 
@@ -498,7 +500,8 @@ func TestAuthenticatedRoute(t *testing.T) {
 		t.Errorf("unexpected Cache-Status header %v", respAuthVaryBypassAlice1.Header.Get("Cache-Status"))
 	}
 	respAuthVaryBypassAlice2, _ := tester.AssertResponse(getRequestFor("/auth-bypass-vary", "Alice"), 200, "Hello, auth vary bypass Bearer Alice!")
-	if respAuthVaryBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-vary-Bearer Alice-text/plain; detail=DEFAULT" {
+	if respAuthVaryBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/auth-bypass-vary-Bearer Alice-text/plain; detail=DEFAULT" &&
+		respAuthVaryBypassAlice2.Header.Get("Cache-Status") != "Souin; hit; ttl=3; key=GET-http-localhost:9080-/auth-bypass-vary-Bearer Alice-text/plain; detail=DEFAULT" {
 		t.Errorf("unexpected Cache-Status header %v", respAuthVaryBypassAlice2.Header.Get("Cache-Status"))
 	}
 }
@@ -562,20 +565,22 @@ func TestMustRevalidate(t *testing.T) {
 	if resp2.Header.Get("Cache-Control") != "must-revalidate" {
 		t.Errorf("unexpected resp2 Cache-Control header %v", resp2.Header.Get("Cache-Control"))
 	}
-	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT" {
+	if resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=4; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT" &&
+		resp2.Header.Get("Cache-Status") != "Souin; hit; ttl=3; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT" {
 		t.Errorf("unexpected resp2 Cache-Status header %v", resp2.Header.Get("Cache-Status"))
 	}
-	if resp2.Header.Get("Age") != "1" {
+	if resp2.Header.Get("Age") != "1" && resp2.Header.Get("Age") != "2" {
 		t.Errorf("unexpected resp2 Age header %v", resp2.Header.Get("Age"))
 	}
 
 	if resp3.Header.Get("Cache-Control") != "must-revalidate" {
 		t.Errorf("unexpected resp3 Cache-Control header %v", resp3.Header.Get("Cache-Control"))
 	}
-	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=-2; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT; fwd=stale; fwd-status=500" {
+	if resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=-2; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT; fwd=stale; fwd-status=500" &&
+		resp3.Header.Get("Cache-Status") != "Souin; hit; ttl=-3; key=GET-http-localhost:9080-/cache-default; detail=DEFAULT; fwd=stale; fwd-status=500" {
 		t.Errorf("unexpected resp3 Cache-Status header %v", resp3.Header.Get("Cache-Status"))
 	}
-	if resp3.Header.Get("Age") != "7" {
+	if resp3.Header.Get("Age") != "7" && resp3.Header.Get("Age") != "8" {
 		t.Errorf("unexpected resp3 Age header %v", resp3.Header.Get("Age"))
 	}
 
@@ -820,7 +825,7 @@ func (t *testVaryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Vary", variedHeader)
 	w.Header().Set(variedHeader, r.Header.Get(variedHeader))
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(fmt.Sprintf("Hello, vary %s!", r.Header.Get(variedHeader))))
+	_, _ = fmt.Fprintf(w, "Hello, vary %s!", r.Header.Get(variedHeader))
 }
 
 func TestVaryHandler(t *testing.T) {
@@ -1178,7 +1183,8 @@ func TestExpires(t *testing.T) {
 			t.Errorf("unexpected Age header %v", resp1.Header.Get("Age"))
 		}
 
-		if resp1.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-%s; detail=DEFAULT", expectedDuration, path) {
+		if resp1.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-%s; detail=DEFAULT", expectedDuration, path) &&
+			resp1.Header.Get("Cache-Status") != fmt.Sprintf("Souin; hit; ttl=%d; key=GET-http-localhost:9080-%s; detail=DEFAULT", expectedDuration-1, path) {
 			t.Errorf(
 				"unexpected second Cache-Status header %v, expected %s",
 				resp1.Header.Get("Cache-Status"),

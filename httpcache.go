@@ -136,16 +136,16 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 		}
 	}
 
-	if app.DefaultCache.GetTTL() == 0 {
+	if app.GetTTL() == 0 {
 		if s.Configuration.DefaultCache.GetTTL() == 0 {
-			app.DefaultCache.TTL = configurationtypes.Duration{Duration: 120 * time.Second}
+			app.TTL = configurationtypes.Duration{Duration: 120 * time.Second}
 		}
 	}
 
 	if s.Configuration.GetDefaultCache() == nil {
 		s.Configuration.DefaultCache = DefaultCache{
-			AllowedHTTPVerbs:             app.DefaultCache.AllowedHTTPVerbs,
-			AllowedAdditionalStatusCodes: app.DefaultCache.AllowedAdditionalStatusCodes,
+			AllowedHTTPVerbs:             app.AllowedHTTPVerbs,
+			AllowedAdditionalStatusCodes: app.AllowedAdditionalStatusCodes,
 			Headers:                      app.Headers,
 			Key:                          app.Key,
 			TTL:                          app.TTL,
@@ -156,7 +156,7 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 		}
 		return nil
 	}
-	if s.Configuration.CacheKeys == nil || len(s.Configuration.CacheKeys) == 0 {
+	if len(s.Configuration.CacheKeys) == 0 {
 		s.Configuration.CacheKeys = configurationtypes.CacheKeys{}
 	}
 	if s.CacheKeys == nil {
@@ -175,7 +175,7 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 	appDc := app.DefaultCache
 	s.Configuration.DefaultCache.AllowedHTTPVerbs = append(s.Configuration.DefaultCache.AllowedHTTPVerbs, appDc.AllowedHTTPVerbs...)
 	s.Configuration.DefaultCache.AllowedAdditionalStatusCodes = append(s.Configuration.DefaultCache.AllowedAdditionalStatusCodes, appDc.AllowedAdditionalStatusCodes...)
-	s.Configuration.DefaultCache.CDN = app.DefaultCache.CDN
+	s.Configuration.DefaultCache.CDN = app.CDN
 	if dc.Headers == nil {
 		s.Configuration.DefaultCache.Headers = appDc.Headers
 	}
@@ -278,9 +278,9 @@ func (s *SouinCaddyMiddleware) Provision(ctx caddy.Context) error {
 	}
 
 	if app.SurrogateStorage == (surrogates_providers.SurrogateInterface)(nil) {
-		app.SurrogateStorage = s.SouinBaseHandler.SurrogateKeyStorer
+		app.SurrogateStorage = s.SurrogateKeyStorer
 	} else {
-		s.SouinBaseHandler.SurrogateKeyStorer = app.SurrogateStorage
+		s.SurrogateKeyStorer = app.SurrogateStorage
 	}
 
 	return nil

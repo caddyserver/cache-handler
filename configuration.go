@@ -15,6 +15,8 @@ import (
 type DefaultCache struct {
 	// Allowed HTTP verbs to be cached by the system.
 	AllowedHTTPVerbs []string `json:"allowed_http_verbs"`
+	// Allowed additional status code to be cached by the system.
+	AllowedAdditionalStatusCodes []int `json:"allowed_additional_status_codes"`
 	// Badger provider configuration.
 	Badger configurationtypes.CacheProvider `json:"badger"`
 	// The cache name to use in the Cache-Status response header.
@@ -63,6 +65,11 @@ type DefaultCache struct {
 // GetAllowedHTTPVerbs returns the allowed verbs to cache
 func (d *DefaultCache) GetAllowedHTTPVerbs() []string {
 	return d.AllowedHTTPVerbs
+}
+
+// GetAllowedAdditionalStatusCodes returns the allowed verbs to cache
+func (d *DefaultCache) GetAllowedAdditionalStatusCodes() []int {
+	return d.AllowedAdditionalStatusCodes
 }
 
 // GetBadger returns the Badger configuration
@@ -189,7 +196,9 @@ type Configuration struct {
 	LogLevel string
 	// SurrogateKeys contains the surrogate keys to use with a predefined mapping
 	SurrogateKeys map[string]configurationtypes.SurrogateKeys
-	logger        core.Logger
+	// SurrogateKeyDisabled disables the surrogate keys system
+	SurrogateKeyDisabled bool
+	logger               core.Logger
 }
 
 // GetUrls get the urls list in the configuration
@@ -197,7 +206,7 @@ func (c *Configuration) GetUrls() map[string]configurationtypes.URL {
 	return c.URLs
 }
 
-// GetDefaultCache get the default cache
+// GetPluginName get the plugin name
 func (c *Configuration) GetPluginName() string {
 	return "caddy"
 }
@@ -237,6 +246,11 @@ func (c *Configuration) GetSurrogateKeys() map[string]configurationtypes.Surroga
 	return nil
 }
 
+// IsSurrogateDisabled disables the surrogate storage
+func (c *Configuration) IsSurrogateDisabled() bool {
+	return c.SurrogateKeyDisabled
+}
+
 // GetCacheKeys get the cache keys rules to override
 func (c *Configuration) GetCacheKeys() configurationtypes.CacheKeys {
 	return c.CacheKeys
@@ -271,6 +285,12 @@ func parseBadgerConfiguration(c map[string]interface{}) map[string]interface{} {
 			c[k] = v
 		case "SyncWrites", "ReadOnly", "InMemory", "MetricsEnabled", "CompactL0OnClose", "LmaxCompaction", "VerifyValueChecksum", "BypassLockGuard", "DetectConflicts":
 			c[k] = true
+			if v != nil {
+				val, ok := v.(string)
+				if ok {
+					c[k], _ = strconv.ParseBool(val)
+				}
+			}
 		case "NumVersionsToKeep", "NumGoroutines", "MemTableSize", "BaseTableSize", "BaseLevelSize", "LevelSizeMultiplier", "TableSizeMultiplier", "MaxLevels", "ValueThreshold", "NumMemtables", "BlockSize", "BlockCacheSize", "IndexCacheSize", "NumLevelZeroTables", "NumLevelZeroTablesStall", "ValueLogFileSize", "NumCompactors", "ZSTDCompressionLevel", "ChecksumVerificationMode", "NamespaceOffset":
 			c[k], _ = strconv.Atoi(v.(string))
 		case "Compression", "ValueLogMaxEntries":
@@ -349,6 +369,14 @@ func parseSimpleFSConfiguration(c map[string]interface{}) map[string]interface{}
 			} else {
 				c[k], _ = strconv.Atoi(v.(string))
 			}
+		case "directory_size":
+			if v == false {
+				c[k] = 0
+			} else if v == true {
+				c[k] = 1
+			} else {
+				c[k], _ = strconv.Atoi(v.(string))
+			}
 		}
 	}
 
@@ -364,6 +392,17 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 				allowed := cfg.DefaultCache.AllowedHTTPVerbs
 				allowed = append(allowed, h.RemainingArgs()...)
 				cfg.DefaultCache.AllowedHTTPVerbs = allowed
+			case "allowed_additional_status_codes":
+				allowed := cfg.DefaultCache.AllowedAdditionalStatusCodes
+				additional := h.RemainingArgs()
+				codes := make([]int, 0)
+				for _, code := range additional {
+					if c, err := strconv.Atoi(code); err == nil {
+						codes = append(codes, c)
+					}
+				}
+				allowed = append(allowed, codes...)
+				cfg.DefaultCache.AllowedAdditionalStatusCodes = allowed
 			case "api":
 				if !isGlobal {
 					return h.Err("'api' block must be global")
@@ -453,6 +492,8 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 							ck.DisableQuery = true
 						case "disable_scheme":
 							ck.DisableScheme = true
+						case "disable_vary":
+							ck.DisableVary = true
 						case "template":
 							ck.Template = h.RemainingArgs()[0]
 						case "hash":
@@ -547,6 +588,8 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 						config_key.DisableQuery = true
 					case "disable_scheme":
 						config_key.DisableScheme = true
+					case "disable_vary":
+						config_key.DisableVary = true
 					case "template":
 						config_key.Template = h.RemainingArgs()[0]
 					case "hash":
@@ -720,6 +763,8 @@ func parseConfiguration(cfg *Configuration, h *caddyfile.Dispenser, isGlobal boo
 				}
 			case "disable_coalescing":
 				cfg.DefaultCache.DisableCoalescing = true
+			case "disable_surrogate_key":
+				cfg.SurrogateKeyDisabled = true
 			default:
 				return h.Errf("unsupported root directive: %s", rootOption)
 			}

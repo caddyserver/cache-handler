@@ -21,8 +21,8 @@ func newStorageProvider() *storage_providers {
 }
 
 func (s *storage_providers) Add(key interface{}) {
-	s.RWMutex.Lock()
-	defer s.RWMutex.Unlock()
+	s.Lock()
+	defer s.Unlock()
 
 	s.list[key] = true
 }

@@ -27,9 +27,10 @@ func init() {
 	httpcaddyfile.RegisterDirectiveOrder(moduleName, httpcaddyfile.Before, "rewrite")
 }
 
-// SouinCaddyMiddleware allows the user to set up an HTTP cache system,
-// RFC-7234 compliant and supports the tag based cache purge,
-// distributed and not-distributed storage, key generation tweaking.
+// SouinCaddyMiddleware development repository of the cache handler, allows
+// the user to set up an HTTP cache system, RFC-7234 compliant and
+// supports the tag based cache purge, distributed and not-distributed
+// storage, key generation tweaking.
 type SouinCaddyMiddleware struct {
 	*middleware.SouinBaseHandler
 	logger        core.Logger
@@ -39,6 +40,8 @@ type SouinCaddyMiddleware struct {
 	LogLevel string `json:"log_level,omitempty"`
 	// Allowed HTTP verbs to be cached by the system.
 	AllowedHTTPVerbs []string `json:"allowed_http_verbs,omitempty"`
+	// Allowed HTTP verbs to be cached by the system.
+	AllowedAdditionalStatusCodes []string `json:"allowed_additional_status_codes,omitempty"`
 	// Headers to add to the cache key if they are present.
 	Headers []string `json:"headers,omitempty"`
 	// Configure the Badger cache storage.
@@ -133,22 +136,23 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 		}
 	}
 
-	if app.DefaultCache.GetTTL() == 0 {
-		return nil
+	if app.GetTTL() == 0 {
+		if s.Configuration.DefaultCache.GetTTL() == 0 {
+			app.TTL = configurationtypes.Duration{Duration: 120 * time.Second}
+		}
 	}
-
-	s.Configuration.API = app.API
 
 	if s.Configuration.GetDefaultCache() == nil {
 		s.Configuration.DefaultCache = DefaultCache{
-			AllowedHTTPVerbs:    app.DefaultCache.AllowedHTTPVerbs,
-			Headers:             app.Headers,
-			Key:                 app.Key,
-			TTL:                 app.TTL,
-			Stale:               app.Stale,
-			DefaultCacheControl: app.DefaultCacheControl,
-			CacheName:           app.CacheName,
-			Timeout:             app.Timeout,
+			AllowedHTTPVerbs:             app.AllowedHTTPVerbs,
+			AllowedAdditionalStatusCodes: app.AllowedAdditionalStatusCodes,
+			Headers:                      app.Headers,
+			Key:                          app.Key,
+			TTL:                          app.TTL,
+			Stale:                        app.Stale,
+			DefaultCacheControl:          app.DefaultCacheControl,
+			CacheName:                    app.CacheName,
+			Timeout:                      app.Timeout,
 		}
 		return nil
 	}
@@ -170,13 +174,17 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 	dc := s.Configuration.DefaultCache
 	appDc := app.DefaultCache
 	s.Configuration.DefaultCache.AllowedHTTPVerbs = append(s.Configuration.DefaultCache.AllowedHTTPVerbs, appDc.AllowedHTTPVerbs...)
-	s.Configuration.DefaultCache.CDN = app.DefaultCache.CDN
+	s.Configuration.DefaultCache.AllowedAdditionalStatusCodes = append(s.Configuration.DefaultCache.AllowedAdditionalStatusCodes, appDc.AllowedAdditionalStatusCodes...)
+	s.Configuration.DefaultCache.CDN = app.CDN
 	if dc.Headers == nil {
 		s.Configuration.DefaultCache.Headers = appDc.Headers
 	}
 
 	if s.Configuration.LogLevel == "" {
 		s.Configuration.LogLevel = app.LogLevel
+	}
+	if !s.Configuration.SurrogateKeyDisabled {
+		s.Configuration.SurrogateKeyDisabled = app.SurrogateKeyDisabled
 	}
 	if dc.TTL.Duration == 0 {
 		s.Configuration.DefaultCache.TTL = appDc.TTL
@@ -196,7 +204,7 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 	if dc.Timeout.Cache.Duration == 0 {
 		s.Configuration.DefaultCache.Timeout.Cache = appDc.Timeout.Cache
 	}
-	if !dc.Key.DisableBody && !dc.Key.DisableHost && !dc.Key.DisableMethod && !dc.Key.DisableQuery && !dc.Key.DisableScheme && !dc.Key.Hash && !dc.Key.Hide && len(dc.Key.Headers) == 0 && dc.Key.Template == "" {
+	if !dc.Key.DisableBody && !dc.Key.DisableHost && !dc.Key.DisableMethod && !dc.Key.DisableQuery && !dc.Key.DisableScheme && !dc.Key.DisableVary && !dc.Key.Hash && !dc.Key.Hide && len(dc.Key.Headers) == 0 && dc.Key.Template == "" {
 		s.Configuration.DefaultCache.Key = appDc.Key
 	}
 	if dc.DefaultCacheControl == "" {
@@ -270,9 +278,9 @@ func (s *SouinCaddyMiddleware) Provision(ctx caddy.Context) error {
 	}
 
 	if app.SurrogateStorage == (surrogates_providers.SurrogateInterface)(nil) {
-		app.SurrogateStorage = s.SouinBaseHandler.SurrogateKeyStorer
+		app.SurrogateStorage = s.SurrogateKeyStorer
 	} else {
-		s.SouinBaseHandler.SurrogateKeyStorer = app.SurrogateStorage
+		s.SurrogateKeyStorer = app.SurrogateStorage
 	}
 
 	return nil
@@ -300,6 +308,7 @@ func parseCaddyfileGlobalOption(h *caddyfile.Dispenser, _ interface{}) (interfac
 	souinApp.API = cfg.API
 	souinApp.CacheKeys = cfg.CacheKeys
 	souinApp.LogLevel = cfg.LogLevel
+	souinApp.SurrogateKeyDisabled = cfg.SurrogateKeyDisabled
 
 	return httpcaddyfile.App{
 		Name:  moduleName,

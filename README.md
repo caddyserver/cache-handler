@@ -99,12 +99,32 @@ Here are all the available options for the global options
         stale 200s
         ttl 1000s
         default_cache_control no-store
+        disable_surrogate_key
     }
 }
 
 :4443
 respond "Hello World!"
 ```
+
+### `disable_surrogate_key`
+
+Disables the surrogate-key storage entirely.
+
+Souin maintains a surrogate-key index (the `SURROGATE_` entries in your storage)
+so that groups of responses can be invalidated together. If you never invalidate
+by surrogate key — no `Surrogate-Key`, `Cache-Groups`, `Edge-Cache-Tag` or
+`Cache-Tags` response headers, and no purge-by-key API — that index is pure
+overhead and can be turned off.
+
+It is worth turning off on high-cardinality workloads. Maintaining the index
+means a read-modify-write of an index entry on every cache store, so the cost of
+storing a response grows with the number of responses already indexed. See
+[#114](https://github.com/caddyserver/cache-handler/issues/114),
+[#118](https://github.com/caddyserver/cache-handler/issues/118) and
+[#127](https://github.com/caddyserver/cache-handler/issues/127).
+
+Caching itself is unaffected — only the surrogate bookkeeping is skipped.
 
 ## Cache directive Syntax
 Here are all the available options for the directive options

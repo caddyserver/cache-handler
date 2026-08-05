@@ -136,6 +136,17 @@ func (s *SouinCaddyMiddleware) FromApp(app *SouinApp) error {
 		}
 	}
 
+	// The Caddyfile `api {}` block is global-only (parseCaddyfileGlobalOption
+	// rejects it inside site blocks), so a handler's own configuration can
+	// only carry an API config via raw JSON. When it doesn't, inherit the
+	// app-level API like every other app-level default merged below —
+	// otherwise GenerateHandlerMap sees a zero API config in every handler
+	// instance and the souin API is unreachable in-band on any listener
+	// (requests fall through the cache handler as if the API didn't exist).
+	if !s.Configuration.API.Souin.Enable && !s.Configuration.API.Debug.Enable && !s.Configuration.API.Prometheus.Enable {
+		s.Configuration.API = app.API
+	}
+
 	if app.GetTTL() == 0 {
 		if s.Configuration.DefaultCache.GetTTL() == 0 {
 			app.TTL = configurationtypes.Duration{Duration: 120 * time.Second}

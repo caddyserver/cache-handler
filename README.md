@@ -1,7 +1,7 @@
 Caddy Module: http.handlers.cache
 ================================
 
-This is a distributed HTTP cache module for Caddy based on [Souin](https://github.com/darkweak/souin) cache.  
+This is a distributed HTTP cache module for Caddy based on [Souin](https://github.com/darkweak/souin) cache.
 
 > [!WARNING]
 > Since `v1.7.0` Souin (the development repository that cache-handler is based on) implements only one storage. If you need a specific storage you have to take it from [the storages repository](https://github.com/darkweak/storages) and add it either in your code, during the build otherwise.  
@@ -10,11 +10,11 @@ See the [documentation about the storages](https://docs.souin.io/docs/storages).
 
 ## Features
 
- * [RFC 7234](https://httpwg.org/specs/rfc7234.html) compliant HTTP Cache.
- * Sets [the `Cache-Status` HTTP Response Header](https://httpwg.org/http-extensions/draft-ietf-httpbis-cache-header.html)
- * REST API to purge the cache and list stored resources.
- * ESI tags processing (using the [go-esi package](https://github.com/darkweak/go-esi)).
- * Builtin support for distributed cache.
+* [RFC 7234](https://httpwg.org/specs/rfc7234.html) compliant HTTP Cache.
+* Sets [the `Cache-Status` HTTP Response Header](https://httpwg.org/http-extensions/draft-ietf-httpbis-cache-header.html)
+* REST API to purge the cache and list stored resources.
+* ESI tags processing (using the [go-esi package](https://github.com/darkweak/go-esi)).
+* Builtin support for distributed cache.
 
 ## Minimal Configuration
 Using the minimal configuration the responses will be cached for `120s`
@@ -320,6 +320,34 @@ redis-url.com {
     }
 }
 ```
+```
+redis-configuration.com {
+    cache {
+        redis {
+            configuration {
+                Network my-network
+                Addr 127.0.0.1:6379
+                Username user
+                Password password
+                DB 1
+                MaxRetries 1
+                MinRetryBackoff 5s
+                MaxRetryBackoff 5s
+                DialTimeout 5s
+                ReadTimeout 5s
+                WriteTimeout 5s
+                PoolFIFO true
+                PoolSize 99999
+                PoolTimeout 10s
+                MinIdleConns 100
+                MaxIdleConns 100
+                ConnMaxIdleTime 5s
+                ConnMaxLifetime 5s
+            }
+        }
+    }
+}
+```
 
 You can also use the configuration. Refer to the [Souin docs](https://docs.souin.io/docs/storages/redis/)
 or [rueidis client options](https://github.com/redis/rueidis/blob/main/rueidis.go#L56) to define your config as key value.
@@ -328,6 +356,7 @@ What does these directives mean?
 |  Key                                      |  Description                                                                                                                                 |  Value example                                                                                                          |
 |:------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
 | `allowed_http_verbs`                      | The HTTP verbs allowed to be cached                                                                                                          | `GET POST PATCH`<br/><br/>`(default: GET HEAD)`                                                                         |
+| `allowed_additional_status_codes`            | The additional HTTP status codes allowed to be cached                                                                                        | `202 400`                                                                         |
 | `api`                                     | The cache-handler API cache management                                                                                                       |                                                                                                                         |
 | `api.basepath`                            | BasePath for all APIs to avoid conflicts                                                                                                     | `/your-non-conflict-route`<br/><br/>`(default: /souin-api)`                                                             |
 | `api.prometheus`                          | Enable the Prometheus metrics                                                                                                                |                                                                                                                         |
@@ -362,6 +391,7 @@ What does these directives mean?
 | `key.disable_method`                      | Disable the method part in the key                                                                                                           | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.disable_query`                       | Disable the query string part in the key                                                                                                     | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.disable_scheme`                      | Disable the scheme string part in the key                                                                                                    | `true`<br/><br/>`(default: false)`                                                                                      |
+| `key.disable_vary`                        | Disable the varied headers part in the key                                                                                                   | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.hash`                                | Hash the key before store it in the storage to get smaller keys                                                                              | `true`<br/><br/>`(default: false)`                                                                                      |
 | `key.headers`                             | Add headers to the key matching the regexp                                                                                                   | `Authorization Content-Type X-Additional-Header`                                                                        |
 | `key.hide`                                | Prevent the key from being exposed in the `Cache-Status` HTTP response header                                                                | `true`<br/><br/>`(default: false)`                                                                                      |
